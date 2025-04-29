@@ -12,13 +12,13 @@ using namespace mlir;
 
 int main(int argc, char ** argv) {
   MLIRContext ctx;
-  // 首先，注册需要的 dialect
+  // first，Registration required dialect
   ctx.loadDialect<func::FuncDialect, arith::ArithDialect>();
-  // 读入dialect
+  // Read indialect
   auto src = parseSourceFile<ModuleOp>(argv[1], &ctx);
-  // 输出dialect
+  // Outputdialect
   src->print(llvm::outs());
-  // 简单的输出，在 debug 的时候常用
+  // Simple output，exist debug Commonly used when
   src->dump();
   return 0;
 }

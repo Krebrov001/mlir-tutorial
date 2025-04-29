@@ -9,11 +9,11 @@ include "mlir/Interfaces/FunctionInterfaces.td"
 include "mlir/Interfaces/ControlFlowInterfaces.td"
 include "mlir/IR/RegionKindInterface.td"
 
-// mnemonic 指名字
+// mnemonic Refer to the name
 class ToyOp<string mnemonic, list<Trait> traits = []> :
   Op<ToyDialect, mnemonic, traits>;
 
-// Pure 是 Trait，表示没有 SideEffect 的纯函数
+// Pure yes Trait，It means no SideEffect Pure functions of
 def AddOp : ToyOp<"add", [Pure, SameOperandsAndResultType]> {
   let summary = "add operation";
   let arguments = (ins Variadic<AnyInteger>:$inputs);
@@ -40,7 +40,7 @@ def ConstantOp : ToyOp<"const", [Pure, InferTypeOpAdaptor]> {
   }];
 }
 
-// 另一种实现
+// Another implementation
 //
 // def ConstantOp : ToyOp<"const", [Pure, InferTypeOpInterface]> {
 //   let summary = "const operation";
@@ -68,14 +68,14 @@ def ReturnOp : ToyOp<"ret", [Terminator, ReturnLike]> {
 
 def FuncOp : ToyOp<"func", [
   FunctionOpInterface,
-  /* Symbol, */ /* Symbol 会自动被 FunctionOpInterface 加上 */
-  /* CallableOpInterface, */ /* CallOpInterface 会自动被 FunctionOpInterface 加上 */
+  /* Symbol, */ /* Symbol Will be automatically FunctionOpInterface Plus */
+  /* CallableOpInterface, */ /* CallOpInterface Will be automatically FunctionOpInterface Plus */
   RegionKindInterface]> {
   let summary = "function";
   let arguments = (ins
     SymbolNameAttr:$sym_name,
     TypeAttrOf<FunctionType>:$function_type,
-    // FunctionOpInterface 需要两个 Attr 来记录 arg 和 res 的名字
+    // FunctionOpInterface Need two Attr Come to record arg and res Name
     OptionalAttr<DictArrayAttr>:$arg_attrs,
     OptionalAttr<DictArrayAttr>:$res_attrs
   );
@@ -84,7 +84,7 @@ def FuncOp : ToyOp<"func", [
   let extraClassDeclaration = [{
     // Method of FunctionOpInterface
     mlir::Region * getCallableRegion() {return &getBody();}
-    // getFunctionType 函数会自动生成
+    // getFunctionType Functions will be generated automatically
     // mlir::FunctionType getFunctionType(); 
 
     // Method of CallableOpInterface

@@ -23,29 +23,29 @@ int main(int argc, char ** argv) {
 
   ctx.loadDialect<func::FuncDialect, arith::ArithDialect>();
 
-  // 创建 OpBuilder
+  // create OpBuilder
   OpBuilder builder(&ctx);
   auto mod = builder.create<ModuleOp>(builder.getUnknownLoc());
 
-  // 设置插入点
+  // Set the insertion point
   builder.setInsertionPointToEnd(mod.getBody());
 
-  // 创建 func
+  // create func
   auto i32 = builder.getI32Type();
   auto funcType = builder.getFunctionType({i32, i32}, {i32});
   auto func = builder.create<func::FuncOp>(builder.getUnknownLoc(), "test", funcType);
 
-  // 添加基本块
+  // Add basic blocks
   auto entry = func.addEntryBlock();
   auto args = entry->getArguments();
 
-  // 设置插入点
+  // Set the insertion point
   builder.setInsertionPointToEnd(entry);
 
-  // 创建 arith.addi
+  // create arith.addi
   auto addi = builder.create<arith::AddIOp>(builder.getUnknownLoc(), args[0], args[1]);
 
-  // 创建 func.return
+  // create func.return
   builder.create<func::ReturnOp>(builder.getUnknownLoc(), ValueRange({addi}));
   mod->print(llvm::outs());
   return 0;

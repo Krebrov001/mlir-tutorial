@@ -1,95 +1,95 @@
 # Hands-On Practical MLIR Tutorial
 
-Kexing Zhou（周可行）
+Kexing Zhou（Zhou Kexing）
 
-北京大学
+Beijing University
 
 zhoukexing@pku.edu.cn
 
 <!-- vscode-markdown-toc -->
-* 1. [MLIR 简介](#mlir-简介)
-  * 1.1. [MLIR 编译管线](#mlir-编译管线)
-  * 1.2. [常见的 Dialect](#常见的-dialect)
-  * 1.3. [insight：“及时做优化”](#insight：“及时做优化”)
-  * 1.4. [MLIR 的用处](#mlir-的用处)
-  * 1.5. [MLIR 的缺点](#mlir-的缺点)
-* 2. [MLIR 基本用法](#mlir-基本用法)
-  * 2.1. [IR 基本结构](#ir-基本结构)
-  * 2.2. [MLIR 基本工程模板](#mlir-基本工程模板)
-    * 2.2.1. [配置 clangd](#配置-clangd)
-  * 2.3. [MLIR 的读入、输出](#mlir-的读入、输出)
-  * 2.4. [用代码生成 MLIR](#用代码生成-mlir)
-* 3. [MLIR Op 的结构](#mlir-op-的结构)
-  * 3.1. [Attribute 和 Operand](#attribute-和-operand)
-  * 3.2. [Attribute, Value 和 Type](#attribute,-value-和-type)
-* 4. [MLIR 的类型转换](#mlir-的类型转换)
-  * 4.1. [Op 的类型转换](#op-的类型转换)
-  * 4.2. [Type / Attribute 的类型转换](#type-/-attribute-的类型转换)
-* 5. [MLIR 的图结构](#mlir-的图结构)
-  * 5.1. [MLIR 数据流图结构](#mlir-数据流图结构)
-  * 5.2. [MLIR 数据流图的遍历与修改](#mlir-数据流图的遍历与修改)
-  * 5.3. [MLIR 控制流图的遍历与修改](#mlir-控制流图的遍历与修改)
-* 6. [基本的 Dialect 工程](#基本的-dialect-工程)
-  * 6.1. [TableGen 工程模板](#tablegen-工程模板)
+* 1. [MLIR Introduction](#mlir-Introduction)
+  * 1.1. [MLIR Compile pipeline](#mlir-Compile pipeline)
+  * 1.2. [Common Dialect](#Common-dialect)
+  * 1.3. [insight：“Timely optimization”](#insight：“Timely optimization”)
+  * 1.4. [MLIR Uses](#mlir-Uses)
+  * 1.5. [MLIR Disadvantages](#mlir-Disadvantages)
+* 2. [MLIR Basic usage](#mlir-Basic usage)
+  * 2.1. [IR Basic structure](#ir-Basic structure)
+  * 2.2. [MLIR Basic project template](#mlir-Basic project template)
+    * 2.2.1. [Configuration clangd](#Configuration-clangd)
+  * 2.3. [MLIR Read in、Output](#mlir-Read in、Output)
+  * 2.4. [Generate with code MLIR](#Generate with code-mlir)
+* 3. [MLIR Op Structure of](#mlir-op-Structure of)
+  * 3.1. [Attribute and Operand](#attribute-and-operand)
+  * 3.2. [Attribute, Value and Type](#attribute,-value-and-type)
+* 4. [MLIR Type conversion](#mlir-Type conversion)
+  * 4.1. [Op Type conversion](#op-Type conversion)
+  * 4.2. [Type / Attribute Type conversion](#type-/-attribute-Type conversion)
+* 5. [MLIR The graph structure](#mlir-The graph structure)
+  * 5.1. [MLIR Data flow graph structure](#mlir-Data flow graph structure)
+  * 5.2. [MLIR Traversal and modification of data flow graph](#mlir-Traversal and modification of data flow graph)
+  * 5.3. [MLIR Control flow diagram traversal and modification](#mlir-Control flow diagram traversal and modification)
+* 6. [Basic Dialect project](#Basic-dialect-project)
+  * 6.1. [TableGen Project templates](#tablegen-Project templates)
   * 6.2. [Tablegen Language Server](#tablegen-language-server)
-  * 6.3. [IR 的默认定义与实现](#ir-的默认定义与实现)
-    * 6.3.1. [TableGen 文件](#tablegen-文件)
-    * 6.3.2. [头文件](#头文件)
-    * 6.3.3. [库文件](#库文件)
-    * 6.3.4. [程序入口](#程序入口)
-* 7. [TableGen Op 定义详解](#tablegen-op-定义详解)
+  * 6.3. [IR Default definition and implementation of](#ir-Default definition and implementation of)
+    * 6.3.1. [TableGen document](#tablegen-document)
+    * 6.3.2. [Header file](#Header file)
+    * 6.3.3. [Library files](#Library files)
+    * 6.3.4. [Program entry](#Program entry)
+* 7. [TableGen Op Definition explanation](#tablegen-op-Definition explanation)
   * 7.1. [Attribute、Type、Constraint](#attribute、type、constraint)
-    * 7.1.1. [内置 Attribute](#内置-attribute)
-    * 7.1.2. [内置的 Type](#内置的-type)
-    * 7.1.3. [为什么 Attribute 和 Type 都是 Constraint](#为什么-attribute-和-type-都是-constraint)
-  * 7.2. [Verifier：发现IR错误](#verifier：发现ir错误)
+    * 7.1.1. [built-in Attribute](#built-in-attribute)
+    * 7.1.2. [Built-in Type](#Built-in-type)
+    * 7.1.3. [Why Attribute and Type All Constraint](#Why-attribute-and-type-All-constraint)
+  * 7.2. [Verifier：DiscoverIRmistake](#verifier：Discoverirmistake)
     * 7.2.1. [emitError](#emiterror)
     * 7.2.2. [LogicalResult](#logicalresult)
-  * 7.3. [Variadic：可变参数](#variadic：可变参数)
-    * 7.3.1. [多个可变参数：AttrSizedOperandSegments](#多个可变参数：attrsizedoperandsegments)
-  * 7.4. [AssemblyFormat：更易读的输出](#assemblyformat：更易读的输出)
-    * 7.4.1. [常用关键字](#常用关键字)
-    * 7.4.2. [额外 attr 字典](#额外-attr-字典)
-    * 7.4.3. [输出 type](#输出-type)
-    * 7.4.4. [可选输出：Optional、UnitAttr](#可选输出：optional、unitattr)
-  * 7.5. [Builder：自定义 create 函数](#builder：自定义-create-函数)
-    * 7.5.1. [默认Builder](#默认builder)
-    * 7.5.2. [自定义builder](#自定义builder)
-  * 7.6. [自定义函数](#自定义函数)
+  * 7.3. [Variadic：Variable parameters](#variadic：Variable parameters)
+    * 7.3.1. [Multiple variable parameters：AttrSizedOperandSegments](#Multiple variable parameters：attrsizedoperandsegments)
+  * 7.4. [AssemblyFormat：More readable output](#assemblyformat：More readable output)
+    * 7.4.1. [Common keywords](#Common keywords)
+    * 7.4.2. [additional attr dictionary](#additional-attr-dictionary)
+    * 7.4.3. [Output type](#Output-type)
+    * 7.4.4. [Optional output：Optional、UnitAttr](#Optional output：optional、unitattr)
+  * 7.5. [Builder：Customize create function](#builder：Customize-create-function)
+    * 7.5.1. [defaultBuilder](#defaultbuilder)
+    * 7.5.2. [Customizebuilder](#Customizebuilder)
+  * 7.6. [Custom functions](#Custom functions)
     * 7.6.1. [header target](#header-target)
-  * 7.7. [使用 Trait](#使用-trait)
-    * 7.7.1. [内存副作用：SideEffectInterfaces](#内存副作用：sideeffectinterfaces)
-    * 7.7.2. [类型推断：InferTypeOpInterface](#类型推断：infertypeopinterface)
-  * 7.8. [函数：FunctionOpTrait](#函数：functionoptrait)
-    * 7.8.1. [定义 Return](#定义-return)
-    * 7.8.2. [定义 Function](#定义-function)
-    * 7.8.3. [定义 Call](#定义-call)
-* 8. [添加 Pass](#添加-pass)
-  * 8.1. [Pass 工程模板](#pass-工程模板)
-  * 8.2. [Pass 定义详解](#pass-定义详解)
-    * 8.2.1. [指定 Pass 在哪个 Op 上运行](#指定-pass-在哪个-op-上运行)
-    * 8.2.2. [带参数的 Pass](#带参数的-pass)
-  * 8.3. [简单的 DCE Pass 实现](#简单的-dce-pass-实现)
-    * 8.3.1. [定义](#定义)
-    * 8.3.2. [实现](#实现)
+  * 7.7. [use Trait](#use-trait)
+    * 7.7.1. [Memory side effects：SideEffectInterfaces](#Memory side effects：sideeffectinterfaces)
+    * 7.7.2. [Type inference：InferTypeOpInterface](#Type inference：infertypeopinterface)
+  * 7.8. [function：FunctionOpTrait](#function：functionoptrait)
+    * 7.8.1. [definition Return](#definition-return)
+    * 7.8.2. [definition Function](#definition-function)
+    * 7.8.3. [definition Call](#definition-call)
+* 8. [Add to Pass](#Add to-pass)
+  * 8.1. [Pass Project templates](#pass-Project templates)
+  * 8.2. [Pass Definition explanation](#pass-Definition explanation)
+    * 8.2.1. [designation Pass Which one is Op Run on](#designation-pass-Which one is-op-Run on)
+    * 8.2.2. [With parameters Pass](#With parameters-pass)
+  * 8.3. [Simple DCE Pass accomplish](#Simple-dce-pass-accomplish)
+    * 8.3.1. [definition](#definition)
+    * 8.3.2. [accomplish](#accomplish)
 * 9. [Pattern Rewrite](#pattern-rewrite)
   * 9.1. [Pattern Rewrite](#pattern-rewrite-1)
-    * 9.1.1. [描述 Pattern](#描述-pattern)
-    * 9.1.2. [调用 Pattern](#调用-pattern)
+    * 9.1.1. [describe Pattern](#describe-pattern)
+    * 9.1.2. [Call Pattern](#Call-pattern)
     * 9.1.3. [Depedent Dialect & Linking](#depedent-dialect-&-linking)
   * 9.2. [Dialect Convertion (Type Conversion)](#dialect-convertion-(type-conversion))
     * 9.2.1. [TypeConverter](#typeconverter)
-    * 9.2.2. [Conversion Pattern：自动做 Operand 的类型转换](#conversion-pattern：自动做-operand-的类型转换)
-    * 9.2.3. [类型转换的细节与 Debug](#类型转换的细节与-debug)
-    * 9.2.4. [使用自己的 materialization](#使用自己的-materialization)
-  * 9.3. [使用 MLIR 里已有的 Pattern 做多步转换](#使用-mlir-里已有的-pattern-做多步转换)
-* 10. [自定义 Type](#自定义-type)
+    * 9.2.2. [Conversion Pattern：Do it automatically Operand Type conversion](#conversion-pattern：Do it automatically-operand-Type conversion)
+    * 9.2.3. [Details of type conversion and Debug](#Details of type conversion and-debug)
+    * 9.2.4. [Use your own materialization](#Use your own-materialization)
+  * 9.3. [use MLIR Already in it Pattern Do multi-step conversion](#use-mlir-Already in it-pattern-Do multi-step conversion)
+* 10. [Customize Type](#Customize-type)
 * 11. [TIPS](#tips)
-  * 11.1. [如何找头文件、找想要的函数](#如何找头文件、找想要的函数)
-  * 11.2. [如何找需要连接的库](#如何找需要连接的库)
-  * 11.3. [如何加快编译速度](#如何加快编译速度)
-  * 11.4. [去 MLIR 里抄代码](#去-mlir-里抄代码)
-* 12. [MLIR 的批判：C++ v.s. Rust](#mlir-的批判：c++-v.s.-rust)
+  * 11.1. [How to find header files、Find the function you want](#How to find header files、Find the function you want)
+  * 11.2. [How to find the library you need to connect to](#How to find the library you need to connect to)
+  * 11.3. [How to speed up compilation](#How to speed up compilation)
+  * 11.4. [go MLIR Copy code in](#go-mlir-Copy code in)
+* 12. [MLIR Criticism：C++ v.s. Rust](#mlir-Criticism：c++-v.s.-rust)
 * 13. [Issue & Reply](#issue-&-reply)
 
 <!-- vscode-markdown-toc-config
@@ -99,32 +99,32 @@ zhoukexing@pku.edu.cn
 <!-- /vscode-markdown-toc -->
 
 
-##  1. <a name='mlir-简介'></a>MLIR 简介
+##  1. <a name='mlir-Introduction'></a>MLIR Introduction
 
-###  1.1. <a name='mlir-编译管线'></a>MLIR 编译管线
+###  1.1. <a name='mlir-Compile pipeline'></a>MLIR Compile pipeline
 
-MLIR 在于设计一套可复用的编译管线，包括可复用的 IR、Pass 和 IO 系统。在 IR 中，多个 Dialect 可以混合存在。MLIR 已经定义好了一套 Dialect Translation Graph：
+MLIR Design a set of reusable compilation pipelines，Including reusable IR、Pass and IO system。exist IR middle，Multiple Dialect Can exist in mixture。MLIR Have defined a set Dialect Translation Graph：
 
 ![](fig/MLIR%20Dialects.jpg)
 
-###  1.2. <a name='常见的-dialect'></a>常见的 Dialect
+###  1.2. <a name='Common-dialect'></a>Common Dialect
 
-MLIR 的 Dialect 是相对独立的，下面列举一些常见的 dialect：
+MLIR of Dialect It is relatively independent，Here are some common ones dialect：
 
-1. **func**：处理函数的dialect，包含的函数定义、调用、返回等基本操作
-2. **arith**：处理加减乘除移位等各种运算
-    * **math**：更复杂的运算，如 log, exp, tan 等
-3. **affine**：处理循环嵌套，实现了循环展开、多面体变换等一些算法
-4. **scf**：(structured control flow) 结构化控制流，保留 for，if 等语句
-    * **cf**：无结构控制流，只有条件跳转命令
-5. **llvm**：LLVM IR 的 binding，可以直接翻译给 LLVM 做后续编译
+1. **func**：Processing functionsdialect，Contained function definitions、Call、Return and other basic operations
+2. **arith**：Handle various operations such as addition, subtraction, multiplication, division, and shift
+    * **math**：More complex operations，like log, exp, tan wait
+3. **affine**：Handle loop nesting，Realize circular expansion、Polyhedral transformation and other algorithms
+4. **scf**：(structured control flow) Structured control flow，reserve for，if Wait for statements
+    * **cf**：Unstructured control flow，Only conditional jump command
+5. **llvm**：LLVM IR of binding，Can be translated directly to LLVM Do subsequent compilation
 
-MLIR的编译从高层次的 tensor 到 低层次的 scf,cf，每个阶段都是多个 dialect 的混合体，每次 lowering 往往只针对一个 dialect 进行。
+MLIRCompilation from a high level tensor arrive Low-level scf,cf，Each stage is multiple dialect A mixture of，every time lowering Often only one dialect conduct。
 
-<!-- ### MLIR Lowering 流程
+<!-- ### MLIR Lowering process
 
 
-从下面的代码开始，逐渐 lower 到 LLVM IR
+Start with the following code，gradually lower arrive LLVM IR
 
 ```mlir
 func.func @foo(%a: tensor<16x64xf64>, %b: tensor<16x64xf64>) -> tensor<16x64xf64> {
@@ -133,7 +133,7 @@ func.func @foo(%a: tensor<16x64xf64>, %b: tensor<16x64xf64>) -> tensor<16x64xf64
 }
 ```
 
-首先，将 tensor 运算转换为循环，命令是
+first，Will tensor Convert the operation to loop，The command is
 
 ```bash
 mlir-opt \
@@ -159,76 +159,76 @@ func.func @foo(%arg0: memref<16x64xf64>, %arg1: memref<16x64xf64>) -> memref<16x
 }
 ```
 
-然后 -->
+Then -->
 
-###  1.3. <a name='insight：“及时做优化”'></a>insight：“及时做优化”
+###  1.3. <a name='insight：“Timely optimization”'></a>insight：“Timely optimization”
 
-这里简单举例，dialect 是如何混合的。
+Here is a brief example，dialect How it is mixed。
 
-例如，我是 pytorch，生成了一些神经网络，我想要表示这些运算：
+For example，I am pytorch，Some neural networks were generated，I want to represent these operations：
 
-* Tensor 是一块带 shape 的指针：使用 **tensor** dialect
-* 简单的 elementwise 加减乘除：使用 **arith** dialect
-* 复杂的 log、exp 等运算：使用 **math** dialect
-* 矩阵线性代数运算：使用 **linalg** dialect
-* 可能有一些控制流：使用 **scf** dialect
-* 整个网络是一个函数：使用 **func** dialect
+* Tensor It's a piece of belt shape Pointer：use **tensor** dialect
+* Simple elementwise Addition, subtraction, multiplication and division：use **arith** dialect
+* Complex log、exp Wait for operation：use **math** dialect
+* Matrix linear algebra operation：use **linalg** dialect
+* There may be some control flow：use **scf** dialect
+* The entire network is a function：use **func** dialect
 
-接下来，将其逐渐 lower 到 LLVM：
+Next，Gradually lower arrive LLVM：
 
-* 调用 Lowering Pass，把 **tensor** lowering 到 **linalg**，<u>而其他的 dialect 不会改变</u>。
-* 继续调用 pass，直到把 **linalg** 转换到 **affine** -> **scf** -> **cf**，<u>其他表示运算的 dialect 保留不变</u>。
-* 继续 Lowering，把 **memref** 转换为裸指针、**arith** 和 **func** 转换为 llvm 内置运算。
-* 最后，所有非 **llvm** dialect 都被转换为了 **llvm** dialect，现在可以导出为 llvm ir 交给 llvm 继续编译。
+* Call Lowering Pass，Bundle **tensor** lowering arrive **linalg**，<u>And the others dialect Will not change</u>。
+* Continue to call pass，Until **linalg** Convert to **affine** -> **scf** -> **cf**，<u>Others represent operations dialect Stay unchanged</u>。
+* continue Lowering，Bundle **memref** Convert to bare pointer、**arith** and **func** Convert to llvm Built-in operations。
+* at last，All non **llvm** dialect All were converted to **llvm** dialect，Now can be exported as llvm ir Leave it to llvm Continue to compile。
 
-**可见，MLIR 编译有一个特点**：不同 dialect 是独立的。
+**visible，MLIR Compilation has a feature**：different dialect Is independent。
 
-* 例如，在做循环展开等优化的时候，我不需要关心加法和减法可以合并；而在做算数表达式优化的时候，也不需要关心当前在哪个函数里边。
-<!-- * 在我们利用 mlir 写新项目的时候，往往可以利用已有的 **arith** 等 dialect 用来表示运算。 -->
+* For example，When doing loop expansion and other optimizations，I don't need to care about addition and subtraction that can be merged；When doing arithmetic expression optimization，Don't care about which function is currently in。
+<!-- * In our use mlir When writing a new project，You can often use existing ones **arith** wait dialect Used to represent operations。 -->
 
-**MLIR 可以从各个层次优化 IR**：例如：
+**MLIR Can be optimized from all levels IR**：For example：
 
-* 在 **affine** 层面，可以根据循环大小做展开，向量化
-* 在 **scf**   层面，可以发现循环不变量
-* 在 **arith** 层面，可以用算数恒等式优化代码
+* exist **affine** Level，Can be expanded according to the loop size，Vectorization
+* exist **scf**   Level，Can find loop invariant
+* exist **arith** Level，Arithmetic identity can be used to optimize the code
 
-MLIR 的 insight 在于“**及时做优化**”。很明显，linalg 层次，我们很容易发现矩阵被转置了两次，但一旦 lower 到 scf，所有转置操作都变成循环，优化就很难进行了。
+MLIR of insight In“**Timely optimization**”。It's obvious，linalg level，It's easy to find that the matrix has been transposed twice，But once lower arrive scf，All transpose operations become loops，Optimization is difficult。
 
-###  1.4. <a name='mlir-的用处'></a>MLIR 的用处
+###  1.4. <a name='mlir-Uses'></a>MLIR Uses
 
-我们使用 MLIR，主要也是想要复用别人已经写好的代码，一般包括：
+We use MLIR，It's mainly to reuse the code that others have written，Generally included：
 
-* 复用已有 dialect 作为 **输入**，不用自己写前端。
-    * 如 Polygeist 能把 C 翻译成 Affine Dialect，这样我们就不用写 C Parser
-* 将已有 dialect **混入**或**作为输出**。
-    * 如 arith 等 dialect，可以直接集成起来，不需要自己写。
-    * 要生成 binary 的时候，可以直接生成 LLVM Dialect，复用后端 LLVM 编译管线
-* 复用已有的 Pass。
-    * 常见的 Pass 如 CSE，DCE 可以复用
-    * Dialect 专用 Pass，如循环展开，也可以复用
+* Reuse already dialect As **enter**，Don't write the front end by yourself。
+    * like Polygeist Can C Translated into Affine Dialect，So we don't have to write C Parser
+* Will already have dialect **Mixed**or**As output**。
+    * like arith wait dialect，Can be integrated directly，Don't need to write it yourself。
+    * To generate binary When，Can be generated directly LLVM Dialect，Reuse backend LLVM Compile pipeline
+* Reuse existing ones Pass。
+    * Common Pass like CSE，DCE Can be reused
+    * Dialect dedicated Pass，If the cycle expands，Can also be reused
 
-###  1.5. <a name='mlir-的缺点'></a>MLIR 的缺点
+###  1.5. <a name='mlir-Disadvantages'></a>MLIR Disadvantages
 
-MLIR 也有缺点：
+MLIR There are also disadvantages：
 
-* 太过笨重，编译、链接时间长（可能会连接出上百M的文件）
-  * 可以用 lld 来加快链接速度，但依然很慢 [见TIPS](#113-如何加快编译速度)
-* Dialect 定义极不灵活，定义较复杂 Op 时非常麻烦
+* Too bulky，Compilation、Long link time（Hundreds may be connectedMFiles）
+  * Can be used lld To speed up links，But it's still slow [SeeTIPS](#113-How to speed up compilation)
+* Dialect Extremely inflexible definition，More complex definition Op Very troublesome
 
-##  2. <a name='mlir-基本用法'></a>MLIR 基本用法
+##  2. <a name='mlir-Basic usage'></a>MLIR Basic usage
 
-###  2.1. <a name='ir-基本结构'></a>IR 基本结构
+###  2.1. <a name='ir-Basic structure'></a>IR Basic structure
 
-MLIR 是 树形结构，每个节点是 Operation，Op 可以组成 Block，Block 组成 Region，而 Region 又可以嵌套在 Op 内部。
+MLIR yes Tree structure，Each node is Operation，Op Can be composed Block，Block composition Region，and Region Can be nested in Op internal。
 
-* **Operation** 指单个运算，运算内可以嵌套 **Region**
-* **Block** 指基本块，基本块包含一个或多个 **Operation**
-* **Region** 指区域，类似于循环体或函数体，包含若干 **Block**
+* **Operation** Refers to a single operation，Can be nested within the operation **Region**
+* **Block** Refers to the basic block，The basic block contains one or more **Operation**
+* **Region** Refers to the area，Similar to a loop body or a function body，Contains several **Block**
 
-MLIR 的基本块使用 **“基本块参数”** 来取代“phi函数”，如下面的例子：
+MLIR Use of basic blocks **“Basic block parameters”** To replace“phifunction”，As shown in the following example：
 
-* **块参数**：每个基本块都带有参数，块内可以使用
-* **终止符**：每个基本块的一般为跳转或返回，跳转时需要附上块参数
+* **Block parameters**：Each basic block has parameters，Can be used in the block
+* **Terminator**：Each basic block is usually a jump or a return，Block parameters need to be attached when jumping
 
 ```mlir
 module {
@@ -244,25 +244,25 @@ func.func @foo(%a: i32, %b: i32, %c: i32) -> i32 {
 }
 ```
 
-**module**: 默认情况下，mlir 最外层是 `builtin.module`，作为 IR 的根。
+**module**: By default，mlir The outermost layer is `builtin.module`，As IR The root of。
 
-###  2.2. <a name='mlir-基本工程模板'></a>MLIR 基本工程模板
+###  2.2. <a name='mlir-Basic project template'></a>MLIR Basic project template
 
-构建第一个 mlir 项目往往非常困难，下面给一个我常用的工程模板：
+Build the first one mlir Projects are often very difficult，Here is a project template I use most commonly：
 
 ```
 mlir-tutorial
-├── install       # Install Prefix，把 MLIR 编译后安装到这里
-├── llvm-project  # MLIR 项目
-└── mlir-toy      # 自己的 MLIR 工程
+├── install       # Install Prefix，Bundle MLIR Install here after compilation
+├── llvm-project  # MLIR project
+└── mlir-toy      # My own MLIR project
 ```
 
-首先，按照 MLIR [getting started](https://mlir.llvm.org/getting_started/) 的方法，安装 MLIR。注意，安装的时候要设置 PREFIX 为 install 目录，如下面所示，和 getting start 上的略有区别：
+first，according to MLIR [getting started](https://mlir.llvm.org/getting_started/) Method，Install MLIR。Notice，Set it up during installation PREFIX for install Table of contents，As shown below，and getting start A slight difference on：
 
 ```bash
 git clone https://github.com/llvm/llvm-project.git
 cd llvm-project
-git checkout 186a4b3b657878ae2aea23caf684b6e103901162 # 本教程使用的版本
+git checkout 186a4b3b657878ae2aea23caf684b6e103901162 # The version used in this tutorial
 mkdir build && cd build
 cmake -G Ninja ../llvm \
   -DCMAKE_INSTALL_PREFIX=/mlir-tutorial/install \
@@ -273,13 +273,13 @@ cmake -G Ninja ../llvm \
   -DLLVM_ENABLE_ASSERTIONS=ON
 ```
 
-在 build 完之后，安装到 prefix
+exist build After that，Install to prefix
 
 ```bash
 ninja install
 ```
 
-现在，mlir 把所有二进制文件、库文件都装到了 install 目录下。现在可以 `export PATH=/mlir-tutorial/install/bin:$PATH`，方便调用 `bin` 里面的 `mlir-opt` 等程序。
+Now，mlir Put all binary files、The library files are installed install In the directory。It's now possible `export PATH=/mlir-tutorial/install/bin:$PATH`，Convenient call `bin` The inside `mlir-opt` Wait for the program。
 
 ```bash
 install
@@ -290,7 +290,7 @@ install
 └── share
 ```
 
-接下来，在 mlir-toy 里面建立一个简单的工程
+Next，exist mlir-toy Create a simple project
 
 ```bash
 mlir-toy
@@ -298,14 +298,14 @@ mlir-toy
 └── main.cpp
 ```
 
-其中 CMakeLists.txt 文件写法比较固定：
+in CMakeLists.txt The file writing method is relatively fixed：
 
 ```cmake
 cmake_minimum_required(VERSION 3.13.4)
 
 project(mlir-toy VERSION 0.0.0)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # 生成 compile_commands.json 便于代码高亮
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # generate compile_commands.json Easy to highlight code
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
 
@@ -323,7 +323,7 @@ include_directories(${LLVM_INCLUDE_DIRS} ${MLIR_INCLUDE_DIRS})
 add_executable(mlir-toy main.cpp)
 ```
 
-在 main.cpp 里面写一个 main 函数，然后先 build 一下。注意，必须要写上 `CMAKE_INSTALL_PREFIX`，这样cmake 可以自动找到 MLIR。
+exist main.cpp Write one in it main function，Then first build one time。Notice，Must be written `CMAKE_INSTALL_PREFIX`，socmake Can be found automatically MLIR。
 
 ```bash
 cd build
@@ -331,24 +331,24 @@ cmake .. -GNinja -DCMAKE_INSTALL_PREFIX=/mlir-tutorial/install
 ninja
 ```
 
-####  2.2.1. <a name='配置-clangd'></a>配置 clangd
+####  2.2.1. <a name='Configuration-clangd'></a>Configuration clangd
 
-使用 vscode 默认的 lint 工具跑 mlir 会非常卡，建议使用 clangd。
+use vscode Default lint Tool running mlir Will be very stuck，Recommended to use clangd。
 
-* 在扩展里安装 clangd 插件
-* cmake 的时候加上 `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`（上面的CMakeLists.txt 已经加上了）
-* 有时候要吧 compile_commands.json 拷贝到工程根目录，或者在 vscode 设置里配置一下
-* 一旦发现高亮炸了，vscode里 Ctrl + Shift + P，输入 clangd: restart language server
-* 有时候，mlir 的编译选项与 clangd 冲突，在 mlir-toy 目录下建立 .clangd 文件，去掉相关的选项：
+* Install in the extension clangd Plugin
+* cmake When adding `-DCMAKE_EXPORT_COMPILE_COMMANDS=ON`（The aboveCMakeLists.txt Already added）
+* Sometimes you want it compile_commands.json Copy to the project root directory，Or in vscode Configure it in the settings
+* Once you find that the highlight explodes，vscodeinside Ctrl + Shift + P，enter clangd: restart language server
+* sometimes，mlir Compilation options and clangd conflict，exist mlir-toy Created in the directory .clangd document，Remove related options：
     ```yaml
     CompileFlags:
       Remove:
         - -fno-lifetime-dse
     ```
 
-###  2.3. <a name='mlir-的读入、输出'></a>MLIR 的读入、输出
+###  2.3. <a name='mlir-Read in、Output'></a>MLIR Read in、Output
 
-测试用 mlir：
+For testing mlir：
 
 ```mlir
 func.func @test(%a: i32, %b: i32) -> i32 {
@@ -357,7 +357,7 @@ func.func @test(%a: i32, %b: i32) -> i32 {
 }
 ```
 
-最简单的读入输出：
+The easiest read-in output：
 
 ```cpp
 #include "mlir/IR/AsmState.h"
@@ -373,19 +373,19 @@ using namespace mlir;
 
 int main(int argc, char ** argv) {
   MLIRContext ctx;
-  // 首先，注册需要的 dialect
+  // first，Registration required dialect
   ctx.loadDialect<func::FuncDialect, arith::ArithDialect>();
-  // 读入文件
+  // Read into the file
   auto src = parseSourceFile<ModuleOp>(argv[1], &ctx);
-  // 输出dialect，也可以输出到 llvm::errs(), llvm::dbgs()
+  // Outputdialect，Can also output to llvm::errs(), llvm::dbgs()
   src->print(llvm::outs());
-  // 简单的输出，在 debug 的时候常用
+  // Simple output，exist debug Commonly used when
   src->dump();
   return 0;
 }
 ```
 
-需要连接上所有依赖的文件：
+Need to connect to all dependencies：
 
 ```cmake
 target_link_libraries(
@@ -397,13 +397,13 @@ target_link_libraries(
 )
 ```
 
-测试方式：
+Test method：
 
 ```bash
 ./ex1-io ../ex1-io/ex1.mlir
 ```
 
-###  2.4. <a name='用代码生成-mlir'></a>用代码生成 MLIR
+###  2.4. <a name='Generate with code-mlir'></a>Generate with code MLIR
 
 ```cpp
 #include "mlir/IR/AsmState.h"
@@ -423,63 +423,63 @@ int main(int argc, char ** argv) {
   MLIRContext ctx;
   ctx.loadDialect<func::FuncDialect, arith::ArithDialect>();
 
-  // 创建 OpBuilder
+  // create OpBuilder
   OpBuilder builder(&ctx);
   auto mod = builder.create<ModuleOp>(builder.getUnknownLoc());
 
-  // 设置插入点
+  // Set the insertion point
   builder.setInsertionPointToEnd(mod.getBody());
 
-  // 创建 func
+  // create func
   auto i32 = builder.getI32Type();
   auto funcType = builder.getFunctionType({i32, i32}, {i32});
   auto func = builder.create<func::FuncOp>(builder.getUnknownLoc(), "test", funcType);
 
-  // 添加基本块
+  // Add basic blocks
   auto entry = func.addEntryBlock();
   auto args = entry->getArguments();
 
-  // 设置插入点
+  // Set the insertion point
   builder.setInsertionPointToEnd(entry);
 
-  // 创建 arith.addi
+  // create arith.addi
   auto addi = builder.create<arith::AddIOp>(builder.getUnknownLoc(), args[0], args[1]);
 
-  // 创建 func.return
+  // create func.return
   builder.create<func::ReturnOp>(builder.getUnknownLoc(), ValueRange({addi}));
   mod->print(llvm::outs());
   return 0;
 }
 ```
 
-**如何寻找 builder.create 的参数**：builder.create 内部是调用 `Op::build` 函数的，你可以 Ctrl + 鼠标点击找到 `func::FuncOp` 的定义，然后找里面的 build 函数，看参数表。
+**How to find builder.create Parameters of**：builder.create Internal call `Op::build` Functional，you can Ctrl + Mouse click to find `func::FuncOp` Definition，Then find the inside build function，Look at the parameter table。
 
-##  3. <a name='mlir-op-的结构'></a>MLIR Op 的结构
+##  3. <a name='mlir-op-Structure of'></a>MLIR Op Structure of
 
-MLIR 的一个 Operation 里可以包含下面的一些东西：
+MLIR One of Operation It can contain some of the following things：
 
-* Operand：这个 Op 接受的操作数
-* Result：这个 Op 生成的新 Value
-* Attribute：可以理解为编译器常量
-* Region：这个 Op 内部的 Region
+* Operand：this Op Accepted operands
+* Result：this Op Generated new Value
+* Attribute：It can be understood as a compiler constant
+* Region：this Op Internal Region
 
-MLIR 中，Attribute 是高度灵活的，允许插入原来不存在的 attr，允许不同 dialect 互相插入 attribute。
+MLIR middle，Attribute It is highly flexible，Allow insertion that does not exist attr，Allow different dialect Insert each other attribute。
 
-###  3.1. <a name='attribute-和-operand'></a>Attribute 和 Operand
+###  3.1. <a name='attribute-and-operand'></a>Attribute and Operand
 
-Attribute 和 Operand 有一些区别。Attribute 指的编译器已知的量，而 Operand 指只有运行时才能知道的量。
+Attribute and Operand There are some differences。Attribute Refers to the amount known to the compiler，and Operand Refers to the amount that can only be known during runtime。
 
-如下面的这个Op，0 是一个 Attribute 而不是一个 Operand
+As the followingOp，0 It's one Attribute Not one Operand
 
 ```mlir
 %c0 = arith.constant 0 : i32
 ```
 
-###  3.2. <a name='attribute,-value-和-type'></a>Attribute, Value 和 Type
+###  3.2. <a name='attribute,-value-and-type'></a>Attribute, Value and Type
 
-Value 必然包含 Type，Type 也可以作为 Attribute 附加在 Operation 上。
+Value Must include Type，Type Can also be used as Attribute Attached in Operation superior。
 
-例如函数 Op，虽然 %a, %b 出现在了参数表里，但它们实际上是函数类型的一部分，算是 Type Attribute。
+For example functions Op，Although %a, %b Appears in the parameter table，But they are actually part of the function type，It's considered Type Attribute。
 
 ```mlir
 func.func @test(%a: i32, %b: i32) -> i32 {
@@ -488,7 +488,7 @@ func.func @test(%a: i32, %b: i32) -> i32 {
 }
 ```
 
-* `mlir-opt --mlir-print-op-generic` 来打印这里的代码，得到下面的代码。参数名被隐去，只有 function_type 作为 attribute 保留了下来。
+* `mlir-opt --mlir-print-op-generic` Let's print the code here，Get the following code。Parameter name is hidden，only function_type As attribute Keep it。
     ```mlir
     "builtin.module"() ({
       "func.func"() <{function_type = (i32, i32) -> i32, sym_name = "test"}> ({
@@ -499,91 +499,91 @@ func.func @test(%a: i32, %b: i32) -> i32 {
     }) : () -> ()
     ```
 
-##  4. <a name='mlir-的类型转换'></a>MLIR 的类型转换
+##  4. <a name='mlir-Type conversion'></a>MLIR Type conversion
 
-###  4.1. <a name='op-的类型转换'></a>Op 的类型转换
+###  4.1. <a name='op-Type conversion'></a>Op Type conversion
 
-MLIR 的所有 Op 都有一个统一的储存格式，叫 `Operation`。`Operation` 里面存了 OpName 和所有的 operands, results, attributes 和其它的东西。
+MLIR All Op There is a unified storage format，Call `Operation`。`Operation` Saved inside OpName and all operands, results, attributes And other things。
 
-用户定义的 `arith.addi` 等等 Op，本质上都是 `Operation` 的指针。但与 `Operation*` 不同的是，`AddIOp` 定义了 `Operation` 里储存的数据的解释方式。如 AddOp，自己是一个 `Operation` 的指针，也定义了一个函数 `getLhs` 用来返回第一个值，当作 lhs。
+User-defined `arith.addi` etc. Op，Essentially it's all `Operation` Pointer。But with `Operation*` The difference is，`AddIOp` Defined `Operation` How to interpret the data stored in it。like AddOp，I am one `Operation` Pointer，A function is also defined `getLhs` Used to return the first value，As lhs。
 
 <center><img src='fig/op.svg' width='80%'></center>
 
-**DownCast**：如何在拿到 `Operation*` 的情况下，将其转换为 `AddOp` 呢？llvm 提供了一些转换函数，这些函数会检查 Operation 的 OpName，并进行转换。
+**DownCast**：How to get it `Operation*` In the case of，Convert it to `AddOp` Woolen cloth？llvm Some conversion functions are provided，These functions check Operation of OpName，And convert。
 
 ```cpp
 using namespace llvm;
 void myCast(Operation * op) {
-  auto res = cast<AddOp>(op); // 直接转换，失败报错
-  auto res = dyn_cast<AddOp>(op); // 尝试转换，失败返回 null，op为null时报错
-  auto res = dyn_cast_if_present<AddOp>(op); // 类似 dyn_cast，op为null时返回null
+  auto res = cast<AddOp>(op); // Direct conversion，Failure to report an error
+  auto res = dyn_cast<AddOp>(op); // Try to convert，Failed to return null，opfornullTimes error
+  auto res = dyn_cast_if_present<AddOp>(op); // similar dyn_cast，opfornullReturn whennull
 }
 ```
 
-**相等关系**：两个 Operation* 相等，指的是它们指向同一个 Operation 实例，而不是这个 Operation 的 operand,result,attr 相等。
+**Equal relationship**：two Operation* equal，Refers to them point to the same Operation Example，Not this Operation of operand,result,attr equal。
 
-**Hashing**：在不修改 IR 的情况下，每个 `Operation` 有唯一地址。于是，可以直接用 `Operation*` 当作值建立哈系表，用来统计 IR 中数据或做分析：
+**Hashing**：Not modified IR In the case of，Each `Operation` Have a unique address。then，Can be used directly `Operation*` Create a Harbin table as value，Used to count IR Data or analysis：
 
 ```cpp
 #include "llvm/ADT/DenseMap.h"
 llvm::DenseMap<Operation*, size_t> numberOfReference;
 ```
 
-###  4.2. <a name='type-/-attribute-的类型转换'></a>Type / Attribute 的类型转换
+###  4.2. <a name='type-/-attribute-Type conversion'></a>Type / Attribute Type conversion
 
-MLIR 的 Type 和 Attribute 与 Op 类似。Type 是到 TypeStorage 的指针，Attribute 也是到 AttributeStorage 的指针。
+MLIR of Type and Attribute and Op similar。Type Yes to TypeStorage Pointer，Attribute Also AttributeStorage Pointer。
 
-* TypeStorage 里面会存 Type 的参数，如 Integer 会存 width，Array 会存 Shape。
+* TypeStorage Will be stored inside Type Parameters of，like Integer Will save width，Array Will save Shape。
 
-| 专用指针    | 通用指针    | 值（存在 Context中）|
+| Special pointer    | Universal pointer    | value（exist Contextmiddle）|
 |:------------|:------------|:--------------------|
 | AddOp       | Operation*  | Operation           |
 | IntegerType | Type        | TypeStorage         |
 | IntegerAttr | Attribute   | AttrStorage         |
 
-**全局单例**：与 Op 不同的是，MLIR Context 会完成 Type 和 Attribute 的去重工作。**Type相等，它们的TypeStorage也一定相等。**
+**Global single case**：and Op The difference is，MLIR Context Will be completed Type and Attribute The work of deduplication。**Typeequal，TheirTypeStorageMust be equal, too。**
 
-**DownCast**：Type 的 DownCast 与 Op 相同。
+**DownCast**：Type of DownCast and Op same。
 
-**Hashing**：与 Op 类似，Type 也可以作为 Key 来建哈系表，但不那么常用。
+**Hashing**：and Op similar，Type Can also be used as Key Come and build a series of harbors，But not so often。
 
-##  5. <a name='mlir-的图结构'></a>MLIR 的图结构
+##  5. <a name='mlir-The graph structure'></a>MLIR The graph structure
 
-MLIR 里，有两个层次的图：
+MLIR inside，Two levels of diagram：
 
-* 第一个是 Region 嵌套构成的树，这个图表示 **控制流**
-* 第二个是 Op/Value 构成的图，这个图表示 **数据流**
+* The first one is Region Nested tree，This figure shows **Control flow**
+* The second one is Op/Value The composition of the picture，This figure shows **Data flow**
 
-###  5.1. <a name='mlir-数据流图结构'></a>MLIR 数据流图结构
+###  5.1. <a name='mlir-Data flow graph structure'></a>MLIR Data flow graph structure
 
-MLIR 的数据流图是由 Operation 和 Value 构成的。MLIR 官网上，IR Structure 里面的 [两幅图](https://mlir.llvm.org/docs/Tutorials/UnderstandingTheIRStructure/#traversing-the-def-use-chains) 将 MLIR 的图结构解释得非常清楚：
+MLIR The data flow diagram is from Operation and Value Constructed。MLIR On the official website，IR Structure The inside [Two pictures](https://mlir.llvm.org/docs/Tutorials/UnderstandingTheIRStructure/#traversing-the-def-use-chains) Will MLIR The graph structure is explained very clearly：
 
-首先是 **Operation 的连接**：
+First of all **Operation Connection**：
 
-* Value 要么来自于 Operation 的 Result 要么来自于 BlockArgument
-* 每个 Operation 的 Operand 都是到 Value 的指针
-* 要修改 Operand 的时候，实际修改的应该是 OpOperand
+* Value Or from Operation of Result Or from BlockArgument
+* Each Operation of Operand All are here Value Pointer
+* To modify Operand When，The actual modification should be OpOperand
 
 <center><img src='fig/DefUseChains.svg' width='80%'></center>
 
-然后，是 **Value 的 use-chain**：
+Then，yes **Value of use-chain**：
 
-* 每个 Value 都将其 User 连接在一起了
+* Each Value All of them User Connected together
 
 <center><img src='fig/Use-list.svg' width='80%'></center>
 
-可见，MLIR 的图是一个双向的图结构，在遍历尤其是修改的时候需要特别小心。
+visible，MLIR The graph is a bidirectional graph structure，Be especially careful when traversing, especially when modifying。
 
-* 在修改 OpOpeand 的时候，对应 value 的 use-chain 会暗中被 MLIR 改掉
-* 在调用 `value->getDefiningOp()` 的时候，BlockArgument 会返回 null
+* Modify OpOpeand When，correspond value of use-chain Will be secretly MLIR Change it
+* Calling `value->getDefiningOp()` When，BlockArgument Will return null
 
-###  5.2. <a name='mlir-数据流图的遍历与修改'></a>MLIR 数据流图的遍历与修改
+###  5.2. <a name='mlir-Traversal and modification of data flow graph'></a>MLIR Traversal and modification of data flow graph
 
-MLIR 数据流图的遍历往往遵循一种模式：Operation 调用函数找 Value，再用 Value 调用函数找 Operation，交替进行。
+MLIR The traversal of data flow graphs often follows a pattern：Operation Call function to find Value，Use again Value Call function to find Operation，Alternate。
 
-其中，**Operation 找 Value 的方法**有：
+in，**Operation try to find Value Method**have：
 
-* **getOperands**、**getResults**：这两个非常常用，如下面的代码可以用来 Op 找 Op
+* **getOperands**、**getResults**：These two are very common，As the following code can be used Op try to find Op
     ```cpp
     for(auto operand: op->getOperands()) {
       if(auto def = operand.getDefiningOp()) {
@@ -594,58 +594,58 @@ MLIR 数据流图的遍历往往遵循一种模式：Operation 调用函数找 V
       }
     }
     ```
-* **getOpOperands**：这个在需要更改 operands 的时候非常有用，例如下面的代码将 value 做替换：
+* **getOpOperands**：This needs to be changed operands Very useful when，For example, the following code will value Make a replacement：
     ```cpp
     IRMapping mapping;
-    // 将 op1 的 results 映射到 op2 的 results
+    // Will op1 of results Map to op2 of results
     mapping.map(op1->getResults(), op2->getResults());
     for(auto &opOperand: op3->getOpOperands()) {
-      // 将 op3 的参数里含有 op1 results 的替换为 op2 的
-      // lookupOrDefault 指找不到 mapping 就用原来的
+      // Will op3 The parameters contain op1 results Replaced by op2 of
+      // lookupOrDefault It means it can't be found mapping Just use the original one
       opOperand.set(mapping.lookupOrDefault(opOperand.get()));
     }
     ```
 
-**Value 找 Op 的方法**有：
+**Value try to find Op Method**have：
 
-* **getDefiningOp**：可能返回 null
-* **getUses**：返回 OpOperand 的迭代器
-* **getUsers**：返回 Operation 的迭代器
+* **getDefiningOp**：Possible to return null
+* **getUses**：return OpOperand Iterator
+* **getUsers**：return Operation Iterator
 
-**Op的getUses和getUser**：operation 也有 getUses 和 getUsers 函数，等价于把这个 op 的所有 result 的 Uses 或 Users 拼在一起。
+**OpofgetUsesandgetUser**：operation Yay getUses and getUsers function，Equivalent to this op All result of Uses or Users Put together。
 
-**Value的修改**：Value 支持 **replaceAllUseWith** 修改，一种*看起来*等价的代码是：
+**ValueModifications**：Value support **replaceAllUseWith** Revise，A sort of*Looks*The equivalent code is：
 ```cpp
 for(auto & uses: value.getUses()) {
   uses.set(new_value);
 }
 ```
-但需要注意，上面的代码是**非常危险**的。因为在 uses.set 的时候，会修改 value 的 use chain，而 value 的 use-chain 正在被遍历，可能一修改就挂了。于是，最好用 mlir 提供好的 `replaceAllUseWith` 来修改。
+But attention is needed，The above code is**Very dangerous**of。Because uses.set When，Will be modified value of use chain，and value of use-chain Being traversed，Maybe it'll hang up as soon as it is modified。then，Best used mlir Provide good `replaceAllUseWith` Come to modify。
 
-###  5.3. <a name='mlir-控制流图的遍历与修改'></a>MLIR 控制流图的遍历与修改
+###  5.3. <a name='mlir-Control flow diagram traversal and modification'></a>MLIR Control flow diagram traversal and modification
 
-与数据流图相比，控制流图遍历更简单，常用的一些函数：
+Compared with data flow graph，Control flow graph traversal is easier，Some commonly used functions：
 
-* **op.getParentOp**, **op.getParentOfType**：获取父亲Op
-* **op.getBlock**：注意是返回父亲block，而不是函数block
-* **op.getBody**：这个才是返回内部 block / region
+* **op.getParentOp**, **op.getParentOfType**：Get FatherOp
+* **op.getBlock**：Note that it is to return to the fatherblock，Not a functionblock
+* **op.getBody**：This is the return to the inside block / region
 
-遍历儿子的方法：
+Methods to traverse sons：
 
-* **op.walk**：递归地遍历所有子孙op：
+* **op.walk**：Recursively traverse all descendantsop：
 
     ```cpp
-    // 递归遍历所有儿子
+    // Recursively traverse all sons
     func.walk([](Operation * child) {
       // do something
     });
-    // 递归遍历所有是 `ReturnOp` 类型的儿子
+    // Recursively traverse all `ReturnOp` Type of son
     func.walk([](ReturnOp ret) {
       // do something
     })
     ```
     
-* **block**：直接就是一个 iterator，可以直接遍历：
+* **block**：It's just one iterator，Can directly traverse：
 
     ```cpp
     Block * block = xxx
@@ -654,45 +654,45 @@ for(auto & uses: value.getUses()) {
     }
     ```
 
-其他遍历方法如 `getOps<xxx>` 可以自行尝试。
+Other traversal methods such as `getOps<xxx>` You can try it yourself。
 
-控制流图的修改主要用 `OpBuilder` 完成。强烈建议把找到 `OpBuilder` 的代码，把里面有什么函数都看一看，常见的：
+The main purpose of modifying the control flow diagram `OpBuilder` Finish。Highly recommend finding `OpBuilder` Code，Take a look at all the functions inside，Common：
 
-* **builder.create**：创建op
-* **builder.insert**：插入remove的op
-* **op->remove()**：从当前块移除，但不删除，可以插入到其他块内
-* **op->erase()**：从当前块移除，并且删除
+* **builder.create**：createop
+* **builder.insert**：insertremoveofop
+* **op->remove()**：Removed from the current block，But not deleted，Can be inserted into other blocks
+* **op->erase()**：Removed from the current block，And delete
 
-**删除顺序**：在删除一个 op 的时候，这个 op 不能存在 user，否则会报错。
+**Delete order**：Delete a op When，this op Cannot exist user，Otherwise, an error will be reported。
 
-##  6. <a name='基本的-dialect-工程'></a>基本的 Dialect 工程
+##  6. <a name='Basic-dialect-project'></a>Basic Dialect project
 
-这一节会讲如何用 tablegen 定义自己的 dialect，使用 mlir 自带的通用程序入口 `MlirOptMain`，生成 `toy-opt`。
+This section will talk about how to use it tablegen Define your own dialect，use mlir Comes with universal program portal `MlirOptMain`，generate `toy-opt`。
 
-这只是一个简单的工程模板，`toy-opt` 只能识别 Op 的 generic 格式。但先不着急，我们先构建出工程的骨架，在往上不断添加 feature。
+This is just a simple project template，`toy-opt` Only recognizable Op of generic Format。But don't worry，Let's build the project's skeleton first，Continuously adding feature。
 
 ```mlir
-%c = "toy.add"(%a, %b): (i32, i32) -> i32 // 可以读取
-%c = toy.add %a, %b : i32 // 无法读取
+%c = "toy.add"(%a, %b): (i32, i32) -> i32 // Can be read
+%c = toy.add %a, %b : i32 // Unable to read
 ```
 
-###  6.1. <a name='tablegen-工程模板'></a>TableGen 工程模板
+###  6.1. <a name='tablegen-Project templates'></a>TableGen Project templates
 
-这个过于复杂，请参考附带例子 `ex3-dialect`：
+This is too complicated，Please refer to the attached example `ex3-dialect`：
 
-文件结构：
+File structure：
 
 ```bash
 ex3-dialect
-├── CMakeLists.txt           # 控制其他各个部分的 CMakeList
+├── CMakeLists.txt           # Controlling the other parts CMakeList
 ├── include
 │   └── toy
-│       ├── CMakeLists.txt  # 控制 Dialect 定义的 CMakeList
-│       ├── ToyDialect.h    # Dialect 头文件
-│       ├── ToyDialect.td   # Dialect TableGen 文件
-│       ├── ToyOps.h        # Op 头文件
-│       ├── ToyOps.td       # Op TableGen 文件
-│       └── Toy.td          # 把 ToyDialect.td 和 ToyOps.td include 到一起，用于 tablegen
+│       ├── CMakeLists.txt  # control Dialect Defined CMakeList
+│       ├── ToyDialect.h    # Dialect Header file
+│       ├── ToyDialect.td   # Dialect TableGen document
+│       ├── ToyOps.h        # Op Header file
+│       ├── ToyOps.td       # Op TableGen document
+│       └── Toy.td          # Bundle ToyDialect.td and ToyOps.td include Come together，For tablegen
 ├── lib
 │   ├── CMakeLists.txt
 │   └── toy.cpp             # Dialect library
@@ -704,15 +704,15 @@ ex3-dialect
 
 ###  6.2. <a name='tablegen-language-server'></a>Tablegen Language Server
 
-vscode 提供 mlir 扩展，可以为我们写 tablegen 文件提供帮助。在 `/mlir-tutorial/install/bin` 里面，有 `mlir-lsp-server`。在 vscode 的设置里找到 mlir-lsp-server 的设置，设好绝对路径，还有 database 的路径。
+vscode supply mlir Extended，Can write for us tablegen Document help。exist `/mlir-tutorial/install/bin` in，have `mlir-lsp-server`。exist vscode Find in the settings mlir-lsp-server Settings，Set an absolute path，besides database The path。
 
-注意，lsp-server 很容易突然崩溃，炸了的时候用 Ctrl+Shift+P，"mlir: restart language server"。
+Notice，lsp-server It's easy to suddenly collapse，Use it when it's exploded Ctrl+Shift+P，"mlir: restart language server"。
 
-###  6.3. <a name='ir-的默认定义与实现'></a>IR 的默认定义与实现
+###  6.3. <a name='ir-Default definition and implementation of'></a>IR Default definition and implementation of
 
-####  6.3.1. <a name='tablegen-文件'></a>TableGen 文件
+####  6.3.1. <a name='tablegen-document'></a>TableGen document
 
-1. `include/ToyDialect.td`：定义 Dialect 名字和cpp命名空间
+1. `include/ToyDialect.td`：definition Dialect Name andcppNamespace
 
     ```tablegen
     include "mlir/IR/OpBase.td"
@@ -723,18 +723,18 @@ vscode 提供 mlir 扩展，可以为我们写 tablegen 文件提供帮助。在
     }
     ```
 
-2. `include/ToyOps.td`：定义 Operation
+2. `include/ToyOps.td`：definition Operation
 
     ```tablegen
     include "mlir/IR/OpBase.td"
     include "toy/ToyDialect.td"
     include "mlir/Interfaces/SideEffectInterfaces.td"
 
-    // mnemonic 指名字
+    // mnemonic Refer to the name
     class ToyOp<string mnemonic, list<Trait> traits = []> :
       Op<ToyDialect, mnemonic, traits>;
 
-    // Pure 是 Trait，表示没有 SideEffect 的纯函数
+    // Pure yes Trait，It means no SideEffect Pure functions of
     def AddOp : ToyOp<"add", [Pure]> {
       let summary = "add operation";
       let arguments = (ins AnyInteger:$lhs, AnyInteger:$rhs);
@@ -742,60 +742,60 @@ vscode 提供 mlir 扩展，可以为我们写 tablegen 文件提供帮助。在
     }
     ```
 
-3. `include/Toy.td`：把其他的 td include 到一起，用于交给 tablegen 生成
+3. `include/Toy.td`：Put the others td include Come together，Used to hand over tablegen generate
 
     ```tablegen
     include "toy/ToyDialect.td"
     include "toy/ToyOps.td"
     ```
 
-   注意添加 include 目录。
+   Pay attention to adding include Table of contents。
     ```cmake
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
     ```
 
-4. `include/CMakeLists.txt`：调用 tablegen 生成代码，其中，第一个 Toy 是 Dialect 的名字，第二个 toy 指的是 `toy.td`
+4. `include/CMakeLists.txt`：Call tablegen Generate code，in，The first Toy yes Dialect Name，The second one toy Refers to `toy.td`
 
     ```cmake
     add_mlir_dialect(Toy toy)
     ```
 
-####  6.3.2. <a name='头文件'></a>头文件
+####  6.3.2. <a name='Header file'></a>Header file
 
-5. tablegen 生成的文件放在 `build/include/toy` 里，包括默认的定义和实现
+5. tablegen The generated file is placed in `build/include/toy` inside，Includes default definitions and implementations
 
-    * `ToyDialect.{h,cpp}.inc`：存 Dialect 的定义和实现
-    * `Toy.{h,cpp}.inc`：存 Op 的定义和实现
+    * `ToyDialect.{h,cpp}.inc`：live Dialect Definition and implementation of
+    * `Toy.{h,cpp}.inc`：live Op Definition and implementation of
 
-    tablegen 生成到了 `build` 目录，需要额外添加 include
+    tablegen Generated `build` Table of contents，Need extra addition include
     ```cmake
     include_directories(${CMAKE_CURRENT_BINARY_DIR}/include)
     ```
 
-6. `include/ToyDialect.h`：把 Dialect 的定义加载进来
+6. `include/ToyDialect.h`：Bundle Dialect The definition of loading in
 
     ```cpp
     #pragma once
     #include "mlir/IR/BuiltinDialect.h"
-    #include "toy/ToyDialect.h.inc" // include 进来就可以了
+    #include "toy/ToyDialect.h.inc" // include Just come in
     ```
 
-7. `include/ToyOps.h`：把 Op 的定义加载进来
+7. `include/ToyOps.h`：Bundle Op The definition of loading in
 
     ```cpp
     #pragma once
     #include "mlir/IR/BuiltinOps.h"
     #include "mlir/IR/Builders.h"
-    // td 里面 include 的，这里也要 include 对应的 h 文件
+    // td in include of，I want it here, too include Corresponding h document
     #include "toy/ToyDialect.h"
     #include "mlir/Interfaces/SideEffectInterfaces.h"
     #define GET_OP_CLASSES
     #include "toy/Toy.h.inc"
     ```
 
-####  6.3.3. <a name='库文件'></a>库文件
+####  6.3.3. <a name='Library files'></a>Library files
 
-8. `lib/toy.cpp`：把默认 Dialect 和 Op 的默认实现加载进来
+8. `lib/toy.cpp`：Make default Dialect and Op The default implementation is loaded in
 
     ```cpp
     #include "toy/ToyDialect.h"
@@ -805,7 +805,7 @@ vscode 提供 mlir 扩展，可以为我们写 tablegen 文件提供帮助。在
     #include "toy/Toy.cpp.inc"
     using namespace toy;
     void ToyDialect::initialize() {
-      // 下面的代码会生成 Op 的列表，专门用来初始化
+      // The following code will be generated Op List of，Specially used for initialization
       addOperations<
     #define GET_OP_LIST
     #include "toy/Toy.cpp.inc"
@@ -813,67 +813,67 @@ vscode 提供 mlir 扩展，可以为我们写 tablegen 文件提供帮助。在
     }
     ```
 
-9. `lib/CMakeLists.txt`：前面的 tablegen 会生成一个 `MLIRxxxIncGen` 的 Target，library 需要依赖这个 Target，才能先生成头文件，再编译 toy.cpp。一般 Library 取名为 `MLIRToy` 或者 `Toy`。
+9. `lib/CMakeLists.txt`：The front tablegen Will generate a `MLIRxxxIncGen` of Target，library Need to rely on this Target，Only by creating header files，Recompile toy.cpp。generally Library Named `MLIRToy` or `Toy`。
     ```cmake
     add_mlir_library(Toy toy.cpp DEPENDS MLIRToyIncGen)
     ```
 
-####  6.3.4. <a name='程序入口'></a>程序入口
+####  6.3.4. <a name='Program entry'></a>Program entry
 
-10. `tools/toy-opt/toy-opt.cpp`：mlir 提供了一个可复用的通用的程序入口，我们可以在 `MlirOptMain` 前面注册我们想要的 Dialect 和 Pass，接下来调用 `MlirOptMain`，就可以使用一些默认提供的功能。
+10. `tools/toy-opt/toy-opt.cpp`：mlir Provides a reusable and universal program entry，We can `MlirOptMain` Register before what we want Dialect and Pass，Call next `MlirOptMain`，You can use some of the default functions。
     
     ```cpp
     #include "mlir/IR/DialectRegistry.h"
     #include "mlir/Tools/mlir-opt/MlirOptMain.h"
-    // 导入 Func Dialect
+    // Import Func Dialect
     #include "mlir/Dialect/Func/IR/FuncOps.h"
-    // 导入 MLIR 自带 Pass
+    // Import MLIR Bring your own Pass
     #include "mlir/Transforms/Passes.h"
-    // 导入我们新建的 Dialect
+    // Import our new one Dialect
     #include "toy/ToyDialect.h"
     using namespace mlir;
     using namespace llvm;
 
     int main(int argc, char ** argv) {
       DialectRegistry registry;
-      // 注册 Dialect
+      // register Dialect
       registry.insert<toy::ToyDialect, func::FuncDialect>();
-      // 注册两个 Pass
+      // Register two Pass
       registerCSEPass();
       registerCanonicalizerPass();
       return asMainReturnCode(MlirOptMain(argc, argv, "toy-opt", registry));
     }
     ```
 
-    注意，此时需要连接上 `MLIROptLib` 库：在 `tools/toy-opt/CMakeLists.txt` 里
+    Notice，You need to connect to this `MLIROptLib` Library：exist `tools/toy-opt/CMakeLists.txt` inside
 
     ```cmake
     add_mlir_tool(toy-opt toy-opt.cpp)
     target_link_libraries(toy-opt
       PRIVATE
       MLIRIR MLIRParser MLIRSupport
-      Toy               # 对应 #include "toy/ToyDialect.h"
-      MLIROptLib        # 对应 #include "mlir/Tools/mlir-opt/MlirOptMain.h"
-      MLIRFuncDialect   # 对应 #include "mlir/Dialect/Func/IR/FuncOps.h"
-      MLIRTransforms    # 对应 #include "mlir/Transforms/Passes.h"
+      Toy               # correspond #include "toy/ToyDialect.h"
+      MLIROptLib        # correspond #include "mlir/Tools/mlir-opt/MlirOptMain.h"
+      MLIRFuncDialect   # correspond #include "mlir/Dialect/Func/IR/FuncOps.h"
+      MLIRTransforms    # correspond #include "mlir/Transforms/Passes.h"
     )
     ```
 
-11. 简单使用 `ninja toy-opt`
-    * `./toy-opt --help` 可以打文档，里面应该有 cse 和 canonicalize 两个 pass
-    * `./toy-opt ../ex3-dialect/ex3.mlir` 读文件
-    * `./toy-opt -canonicalize ../ex3-dialect/ex3-cse.mlir`，可以做 dce
-    * `./toy-opt -cse ../ex3-dialect/ex3-cse.mlir`，可以做 cse
+11. Simple use `ninja toy-opt`
+    * `./toy-opt --help` Can write a document，There should be something inside cse and canonicalize two pass
+    * `./toy-opt ../ex3-dialect/ex3.mlir` Read the file
+    * `./toy-opt -canonicalize ../ex3-dialect/ex3-cse.mlir`，Can do it dce
+    * `./toy-opt -cse ../ex3-dialect/ex3-cse.mlir`，Can do it cse
 
-为什么 mlir 知道我们的 Op 可以被 CSE 和 DCE 呢，因为我们给 Op 标记了 `Pure` Trait，这表示这个 Op 是纯函数。`Pure` Trait 会自动帮我们注册对应 Op 的 CSE 和 DCE 模式。
+Why mlir Know ours Op Can be CSE and DCE Woolen cloth，Because we give Op Tagged `Pure` Trait，This means this Op It's a pure function。`Pure` Trait It will automatically register for us Op of CSE and DCE model。
 
-##  7. <a name='tablegen-op-定义详解'></a>TableGen Op 定义详解
+##  7. <a name='tablegen-op-Definition explanation'></a>TableGen Op Definition explanation
 
-上一节介绍了 MLIR 工程的骨架，现在我们为其添砖加瓦，让 IR 的定义、输入、输出更简单。
+Previous section introduced MLIR The skeleton of the project，Now we'll add bricks to it，let IR Definition、enter、Simpler output。
 
 ###  7.1. <a name='attribute、type、constraint'></a>Attribute、Type、Constraint
 
-添加 Attribute 的方法与 Operand 类似，都写在 arguments 里面。
+Add to Attribute Methods and Operand similar，All written in arguments in。
 
 ```tablegen
 def ConstantOp : ToyOp<"const", [Pure]> {
@@ -883,33 +883,33 @@ def ConstantOp : ToyOp<"const", [Pure]> {
 }
 ```
 
-####  7.1.1. <a name='内置-attribute'></a>内置 Attribute
+####  7.1.1. <a name='built-in-attribute'></a>built-in Attribute
 
-见 `mlir/IR/CommonAttrConstraints.td`，常用的：
+See `mlir/IR/CommonAttrConstraints.td`，Commonly used：
 
-* `TypeAttrOf<Type>`：将一个 Type 作为 Attr
-* `FlatSymbolRefAttr`：call 函数的时候，函数名的 Attr
-* `SymbolNameAttr`: 定义函数的时候，函数名的 Attr
-* `UnitAttr`：表示一个bool，为true的时候，它在 attr 表里面，为 false 的时候不在
-* `I64SmallVectorArrayAttr`：整数数组 Attr，与其他的整数数组区别的是，它用 SmallVector，会好用一些
+* `TypeAttrOf<Type>`：Put one Type As Attr
+* `FlatSymbolRefAttr`：call When the function，Function name Attr
+* `SymbolNameAttr`: When defining a function，Function name Attr
+* `UnitAttr`：Indicates abool，fortrueWhen，It's in attr Inside the table，for false Not here when
+* `I64SmallVectorArrayAttr`：Integer array Attr，The difference from other integer arrays is，It uses SmallVector，It will be easier to use
 
-####  7.1.2. <a name='内置的-type'></a>内置的 Type
+####  7.1.2. <a name='Built-in-type'></a>Built-in Type
 
-见 `mlir/IR/CommonTypeConstraint.td`，常用的：
+See `mlir/IR/CommonTypeConstraint.td`，Commonly used：
 
 * `I1`, `I8`, `I16`, `I32`, `I64`, `I128`
-* `AnyType`：表示任何类型
-* `AnyInteger`：表示任何整数
+* `AnyType`：Indicates any type
+* `AnyInteger`：Represents any integer
 
-####  7.1.3. <a name='为什么-attribute-和-type-都是-constraint'></a>为什么 Attribute 和 Type 都是 Constraint
+####  7.1.3. <a name='Why-attribute-and-type-All-constraint'></a>Why Attribute and Type All Constraint
 
-为 Op 定义一个 Attribute 的时候，实际上是指定了 [Operation](#41-op-的类型转换) 里面 operands, results, attributes 等等 的解释方式。
+for Op Define a Attribute When，Actually specified [Operation](#41-op-Type conversion) in operands, results, attributes etc. How to explain。
 
-像 Attribute、Type 这样的 表示了 “第 i 个位置的 operand 只能被解释为整数”、“第 j 个位置的 attr 只能被解释为Symbol” 的约定，算是限制了各个 field 的解释方式，被看作是 “Constraint”。
+picture Attribute、Type Such Shown “1. i One location operand Only interpreted as integers”、“1. j One location attr Only interpreted asSymbol” Agreement，It's limited to each field How to explain，Being regarded as “Constraint”。
 
-###  7.2. <a name='verifier：发现ir错误'></a>Verifier：发现IR错误
+###  7.2. <a name='verifier：Discoverirmistake'></a>Verifier：DiscoverIRmistake
 
-在 tablegen 里面加上 `hasVerifier=true`
+exist tablegen Add it inside `hasVerifier=true`
 
 ```mlir
 def SubOp : ToyOp<"sub", [Pure]> {
@@ -920,7 +920,7 @@ def SubOp : ToyOp<"sub", [Pure]> {
 }
 ```
 
-然后在 `toy.cpp` 里写 verifier 的实现：
+Then in `toy.cpp` Write in verifier Implementation：
 
 ```cpp
 using namespace mlir;
@@ -934,21 +934,21 @@ LogicalResult SubOp::verify() {
 
 ####  7.2.1. <a name='emiterror'></a>emitError
 
-emitError 是 Op 带有的函数。MLIR里面 Op 都会带 `emitError` 函数，用来区分是哪个Op发生了错误。在这里，我们 verify 的是自己，就只需要调用自己的 `emitError` 函数。
+emitError yes Op Functions with。MLIRin Op All will bring `emitError` function，Used to distinguish which one isOpAn error occurred。Here，us verify It's yourself，Just call your own `emitError` function。
 
-* 还有 `emitWarning`，可以输出 Warning。
+* besides `emitWarning`，Can output Warning。
 
 ####  7.2.2. <a name='logicalresult'></a>LogicalResult
 
-MLIR 用 LogicalResult 用来表示类似 bool 的值，它的特点是：
+MLIR use LogicalResult Used to represent similar bool Value of，Its characteristics are：
 
-* mlir的一些其他类型可以自动转换为 LogicalResult，如上面 emitError 就可以自动转换
-* 用 success(), failure() 生成 true 和 false
-* 用 succeed(x), failed(x) 来判读是否为 true, false
+* mlirSome other types of LogicalResult，As above emitError It can be automatically converted
+* use success(), failure() generate true and false
+* use succeed(x), failed(x) To determine whether it is true, false
 
-###  7.3. <a name='variadic：可变参数'></a>Variadic：可变参数
+###  7.3. <a name='variadic：Variable parameters'></a>Variadic：Variable parameters
 
-使用 `Variadic<Type>` 来描述可变参数：
+use `Variadic<Type>` To describe variable parameters：
 
 ```tablegen
 def AddOp : ToyOp<"add", [Pure]> {
@@ -958,7 +958,7 @@ def AddOp : ToyOp<"add", [Pure]> {
 }
 ```
 
-使用 `Option<Type>` 来描述可选参数：
+use `Option<Type>` To describe optional parameters：
 
 ```tablegen
 def ReturnOp : ToyOp<"return", [Terminator, ReturnLike]> {
@@ -967,15 +967,15 @@ def ReturnOp : ToyOp<"return", [Terminator, ReturnLike]> {
 }
 ```
 
-####  7.3.1. <a name='多个可变参数：attrsizedoperandsegments'></a>多个可变参数：AttrSizedOperandSegments
+####  7.3.1. <a name='Multiple variable parameters：attrsizedoperandsegments'></a>Multiple variable parameters：AttrSizedOperandSegments
 
-当一个函数只有一个 `Variadic` 或 `Optional` 的时候，可以根据参数总数量推断有多少个可变参数。但如果有多个 `Variadic` 或 `Optional`，需要增加 `AttrSizedOperandSegments` Trait，这个 trait 会为 Op 添加一个 attribute 用来记录每个可变参数是否存在，如果存在有多少个。
+When a function has only one `Variadic` or `Optional` When，You can infer how many variable parameters are there based on the total number of parameters。But if there are multiple `Variadic` or `Optional`，Need to add `AttrSizedOperandSegments` Trait，this trait Will be Op Add one attribute Used to record whether each variable parameter exists，If there are many。
 
-与之相关的还有 `AttrSizedResultSegments` 用于返回了多个可变参数的情况，它们都在 `OpBase.td` 里面。
+There are also related to this `AttrSizedResultSegments` Used to return multiple variable parameters，They're all in `OpBase.td` in。
 
-###  7.4. <a name='assemblyformat：更易读的输出'></a>AssemblyFormat：更易读的输出
+###  7.4. <a name='assemblyformat：More readable output'></a>AssemblyFormat：More readable output
 
-例子：
+example：
 
 ```tablegen
 def AddOp : ToyOp<"add", [Pure]> {
@@ -986,31 +986,31 @@ def AddOp : ToyOp<"add", [Pure]> {
 }
 ```
 
-这样会生成下面的更可读的代码：
+This will generate the following more readable code：
 
 ```mlir
 %0 = toy.add %a, %b : i32, i32 -> i32
 ```
 
-####  7.4.1. <a name='常用关键字'></a>常用关键字
+####  7.4.1. <a name='Common keywords'></a>Common keywords
 
-* `$xxx` 用来表示 operand 或者 attribute
-* `type($xxx)` 用来表示 xxx 的类型。
-* ``` `keyword` ```： 插入 keyword
-* `functional-type($inputs, results)`，生成形如 `(i32, i32) -> i32` 的函数类型
-* `attr-dict`：表示额外的 attr 字典。
+* `$xxx` Used to represent operand or attribute
+* `type($xxx)` Used to represent xxx Types of。
+* ``` `keyword` ```： insert keyword
+* `functional-type($inputs, results)`，Generate form `(i32, i32) -> i32` Function type
+* `attr-dict`：Indicates additional attr dictionary。
 
-####  7.4.2. <a name='额外-attr-字典'></a>额外 attr 字典
+####  7.4.2. <a name='additional-attr-dictionary'></a>additional attr dictionary
 
-mlir 允许为 OP 插入任意的 attribute，允许跨 dialect 插入 attribute。所以，在定义 op 的时候，总是要把 `attr-dict` 加上，这样其他人插入的 attr 也能存下来。
+mlir Allowed as OP Insert any attribute，Allow cross dialect insert attribute。so，In definition op When，Always have to `attr-dict` Plus，This way, others inserted it attr Can save it too。
 
-####  7.4.3. <a name='输出-type'></a>输出 type
+####  7.4.3. <a name='Output-type'></a>Output type
 
-所有没有限制死（AnyXXX，如 AnyInteger）的 operand，都需要写清楚 type，要么用 `type($xxx)`，要么用 `functional-type`。
+All dead without restrictions（AnyXXX，like AnyInteger）of operand，All need to be written clearly type，Or use `type($xxx)`，Or use `functional-type`。
 
-####  7.4.4. <a name='可选输出：optional、unitattr'></a>可选输出：Optional、UnitAttr
+####  7.4.4. <a name='Optional output：optional、unitattr'></a>Optional output：Optional、UnitAttr
 
-针对 Optional 和 UnitAttr，MLIR 提供了一种 条件分组 的语法：如下面的 HWReg
+against Optional and UnitAttr，MLIR Provides a Conditional grouping Syntax of：As shown below HWReg
 
 ```tablegen
 def HWRegOp : ToyOp<"reg"> {
@@ -1026,7 +1026,7 @@ def HWRegOp : ToyOp<"reg"> {
 }
 ```
 
-可以有下面的效果：
+There may be the following effects：
 
 ```mlir
 %a = toy.reg public %b clock %clk reset %reset : (i32) -> i32
@@ -1034,16 +1034,16 @@ def HWRegOp : ToyOp<"reg"> {
 %a = toy.reg %b clock %clk : (i32) -> i32
 ```
 
-* `[{xxx}]`，MLIR中的长文本可以用 `[{}]` 括起来。
-* ``(`reset` $reset^)?``，其中 `(...)?` 表示分组，`^` 表示判断依据。只有对应的 `Optional` 或 `UnitAttr` 存在的时候，才会输出这个分组。
+* `[{xxx}]`，MLIRLong text in it can be used `[{}]` Cover it up。
+* ``(`reset` $reset^)?``，in `(...)?` Indicates grouping，`^` Express judgment basis。Only corresponding `Optional` or `UnitAttr` When it exists，This group will be output。
 
-###  7.5. <a name='builder：自定义-create-函数'></a>Builder：自定义 create 函数
+###  7.5. <a name='builder：Customize-create-function'></a>Builder：Customize create function
 
-Builder 会在 `builder.create<XXXOp>()` 的时候被调用，一个更简单的 builder 可以让创建 Op 更快捷。
+Builder Will be here `builder.create<XXXOp>()` Called when，A simpler builder Can create Op Faster。
 
-####  7.5.1. <a name='默认builder'></a>默认Builder
+####  7.5.1. <a name='defaultbuilder'></a>defaultBuilder
 
-MLIR 会默认生成一些builder。默认 builder 会要求先传入 result 的类型，再传入 operand，attribute 的值。
+MLIR Some will be generated by defaultbuilder。default builder Will ask to pass in first result Types of，Pass in again operand，attribute Value of。
 
 ```cpp
 build(
@@ -1053,13 +1053,13 @@ build(
 )
 ```
 
-有时候，一些常用的 Attr，如 `StringAttr`，MLIR 会自动生成以 `StringRef` 为参数的 builder，用来方便调用。用户就不需要使用 `builder.getStringAttr(xxx)` 先把 `StringRef` 转换为 `StringAttr` 再来传参数了。
+sometimes，Some commonly used Attr，like `StringAttr`，MLIR It will be automatically generated `StringRef` for parameters builder，Used to facilitate call。Users don't need to use it `builder.getStringAttr(xxx)` Put it first `StringRef` Convert to `StringAttr` Let's pass the parameters again。
 
-[之前](#711-内置-attribute) 提到的 `I64SmallVectorArrayAttr` 就可以直接传一个 `SmallVector<int64_t>`，而不需要传一个 Attr 进去，会非常方便。
+[Before](#711-built-in-attribute) Referred `I64SmallVectorArrayAttr` You can just pass one `SmallVector<int64_t>`，No need to pass one Attr Go in，It will be very convenient。
 
-####  7.5.2. <a name='自定义builder'></a>自定义builder
+####  7.5.2. <a name='Customizebuilder'></a>Customizebuilder
 
-例如，我们可以在创建 Op 的时候，推断出结果的类型：
+For example，We can create Op When，The type of result is inferred：
 
 ```mlir
 def SubOp : ToyOp<"sub", [Pure]> {
@@ -1076,14 +1076,14 @@ def SubOp : ToyOp<"sub", [Pure]> {
 }
 ```
 
-* 首先，mlir 会自动为我们生成 `build($_builder, $_state, ResultType, LhsValue, RhsValue)` 的 builder
-* 我们的 builder 通过 `lhs.getType()` 推断 result 的类型，并调用 mlir 生成好的 builder，实现自动推断类型
+* first，mlir It will be generated automatically for us `build($_builder, $_state, ResultType, LhsValue, RhsValue)` of builder
+* Our builder pass `lhs.getType()` infer result Types of，And call mlir Generate good builder，Implement automatic inference type
 
-如果只是为了推断类型，建议使用 MLIR 为类型推断专门实现的 Trait: InferTypeOpInterface [后面有介绍](#772-类型推断infertypeopinterface)。
+If only to infer the type，Recommended to use MLIR Specially implemented for type inference Trait: InferTypeOpInterface [An introduction later](#772-Type inferenceinfertypeopinterface)。
 
-###  7.6. <a name='自定义函数'></a>自定义函数
+###  7.6. <a name='Custom functions'></a>Custom functions
 
-tablegen 允许用户为 Op 添加自定义函数，例如，我想直接获取 ConstantOp 的类型的位宽：
+tablegen Allow users to Op Add custom functions，For example，I want to get it directly ConstantOp The bit width of the type：
 
 ```tablegen
 def ConstantOp : ToyOp<...> {
@@ -1095,14 +1095,14 @@ def ConstantOp : ToyOp<...> {
 }
 ```
 
-这样，之后想要获取位宽的时候，就可以更简洁了：
+so，When you want to get the bit width later，It can be more concise：
 
 ```cpp
 auto w = op.getResult().getType().getWidth();
 auto w = op.getBitWidth();
 ```
 
-由于 tablegen 里面没有 cpp 的语法补全，可以只在 tablegen 里写一个方法定义，然后在 `toy.cpp` 里面写实现（使用 `ninja MLIRToyIncGen` 生成头文件）
+because tablegen No inside cpp Syntax Completion，Can only be in tablegen Write a method definition，Then in `toy.cpp` Write implementation inside（use `ninja MLIRToyIncGen` Generate header file）
 
 ```tablegen
 def ConstantOp : ToyOp<...> {
@@ -1114,52 +1114,52 @@ def ConstantOp : ToyOp<...> {
 
 ####  7.6.1. <a name='header-target'></a>header target
 
-一个 trick 是在 `CMakeLists.txt` 里面添加一个 target，这样每次改了 tablegen 文件，只需要 `ninja header` 就能生成头文件。
+one trick Yes `CMakeLists.txt` Add one in it target，This is changed every time tablegen document，Just need `ninja header` You can generate header files。
 
 ```cmake
 add_custom_target(header DEPENDS MLIRToyIncGen)
 ```
 
-###  7.7. <a name='使用-trait'></a>使用 Trait
+###  7.7. <a name='use-trait'></a>use Trait
 
-[前面](#634-程序入口) 介绍到，在给 Op 标记上 `Pure` 之后，就会自动被 cse, dce Pass 理解。除了 Pure Trait 之外，MLIR 为我们提供了很多好用的 Trait，这里介绍常用的 SideEffect，InferType 和 比较复杂的和函数相关的 Trait。
+[Front](#634-Program entry) Introduction，Giving Op Mark on `Pure` after，Will be automatically cse, dce Pass understand。Apart from Pure Trait Outside，MLIR Provide us with a lot of useful things Trait，Here are the commonly used ones SideEffect，InferType and More complex and related to functions Trait。
 
-使用 Trait 的时候要注意：
+use Trait Pay attention when：
 
-1. Interface 可能会要求用户实现一些固定的接口，trait 里一些 `InterfaceMethod` 是没有默认实现的。
-2. 在 td 里要 include trait 的 td 文件，在 h 里也要 include 对应的 h 文件
+1. Interface Users may be required to implement some fixed interfaces，trait Some inside `InterfaceMethod` There is no default implementation。
+2. exist td Want to include trait of td document，exist h Want it in the middle include Corresponding h document
 
-####  7.7.1. <a name='内存副作用：sideeffectinterfaces'></a>内存副作用：SideEffectInterfaces
+####  7.7.1. <a name='Memory side effects：sideeffectinterfaces'></a>Memory side effects：SideEffectInterfaces
 
-`mlir/Interfaces/SideEffectInterfaces.{td,h}` 文件里定义了内存副作用的 interface
+`mlir/Interfaces/SideEffectInterfaces.{td,h}` The memory side effects are defined in the file interface
 
-* **Pure**：纯函数，使用后可以自动 cse，dce
-* `MemRead`, `MemWrite`, `MemAlloc`, `MemFree`：内存作用
+* **Pure**：Pure functions，It can be automatically cse，dce
+* `MemRead`, `MemWrite`, `MemAlloc`, `MemFree`：Memory function
 
-####  7.7.2. <a name='类型推断：infertypeopinterface'></a>类型推断：InferTypeOpInterface
+####  7.7.2. <a name='Type inference：infertypeopinterface'></a>Type inference：InferTypeOpInterface
 
-`mlir/Interfaces/InferTypeOpInterface.{td,h}` 文件里定义了类型推断的 Interface，使用类型推断，你可以：
+`mlir/Interfaces/InferTypeOpInterface.{td,h}` Type inference is defined in the file Interface，Use type inference，you can：
 
-* 在 `assemblyFormat` 里可以少写几个 type，写出来的格式更漂亮
-* 自动生成带类型推断的 builder，只需要传参数就能推断返回值类型
+* exist `assemblyFormat` You can write a few less type，The format written is more beautiful
+* Automatically generate type inference builder，You only need to pass parameters to infer the return value type
 
-类型推断主要有下面几个常用的 Trait：
+Type inference mainly includes the following commonly used Trait：
 
-* **SameOperandsAndResultType**：操作数和返回值有相同的类型，使用后 assemblyFormat 里就只需要写任何某一个操作数的类型
-* **InferTypeOpInterface**：通过输入和 attr 的类型推断返回值类型，自己写推断函数
-* **InferTypeOpAdaptor**：与上一个相似，但封装了一个 Adaptor，写起来会更简单
+* **SameOperandsAndResultType**：The operand and return value have the same type，After use assemblyFormat You only need to write any operand type
+* **InferTypeOpInterface**：By entering and attr Type infer return value type，Write your own inference function
+* **InferTypeOpAdaptor**：Similar to the previous one，But encapsulated Adaptor，It will be easier to write
 
-推荐使用 **InferTypeOpAdaptor**：
-* 在 tablegen 里面
+Recommended use **InferTypeOpAdaptor**：
+* exist tablegen in
     ```tablegen
     def ConstantOp : ToyOp<"const", [Pure, InferTypeOpAdaptor]> {
       let summary = "const operation";
       let arguments = (ins APIntAttr:$value);
       let results = (outs AnyInteger:$result);
-      let assemblyFormat = "$value attr-dict"; // 这里不需要写 type($result) 了
+      let assemblyFormat = "$value attr-dict"; // No need to write here type($result) It's
     }
     ```
-* 在 `toy.cpp` 里面
+* exist `toy.cpp` in
     ```cpp
     mlir::LogicalResult ConstantOp::inferReturnTypes(
       mlir::MLIRContext * context,
@@ -1167,20 +1167,20 @@ add_custom_target(header DEPENDS MLIRToyIncGen)
       Adaptor adaptor,
       llvm::SmallVectorImpl<mlir::Type> & inferedReturnType
     ) {
-      // adaptor 是 “incomplete op”，表示只知道输入，不知道返回值的 Op
+      // adaptor yes “incomplete op”，It means only the input is known，Don't know the return value Op
       auto type = adaptor.getValueAttr().getType();
       inferedReturnType.push_back(type);
       return mlir::success();
     }
     ```
 
-###  7.8. <a name='函数：functionoptrait'></a>函数：FunctionOpTrait
+###  7.8. <a name='function：functionoptrait'></a>function：FunctionOpTrait
 
-这里着重介绍 func、call、return，参考 `ex4-beautiful-dialect`。函数的这一套代码非常固定，每次照搬就好，没有太多的解释。按照下面的说明设置好函数Op后，应该就可以用 `./ex4-opt ../ex4-beautiful-dialect/ex4.mlir` 来读取函数了。
+Here is a highlight func、call、return，reference `ex4-beautiful-dialect`。This set of code for the function is very fixed，It's good every time you copy it，There is no much explanation。Set up the function as followsOpback，It should be available `./ex4-opt ../ex4-beautiful-dialect/ex4.mlir` Come to read the function。
 
-####  7.8.1. <a name='定义-return'></a>定义 Return
+####  7.8.1. <a name='definition-return'></a>definition Return
 
-Return 是一个终止符，需要使用 `Terminator`。同时，我们为其加上 `ReturnLike`。
+Return is a terminator，Need to use `Terminator`。at the same time，We'll add it to it `ReturnLike`。
 
 ```tablegen
 def ReturnOp : ToyOp<"ret", [Terminator, ReturnLike]> {
@@ -1190,31 +1190,31 @@ def ReturnOp : ToyOp<"ret", [Terminator, ReturnLike]> {
 }
 ```
 
-####  7.8.2. <a name='定义-function'></a>定义 Function
+####  7.8.2. <a name='definition-function'></a>definition Function
 
-定义函数需要实现 `FunctionOpInterface`，它依赖于 `Symbol` 和 `CallableOpInterface`。
-同时，因为我们定义了 Region，最好还加上 `RegionKindInterface`，它会自动为我们检查 Region 的格式是否正确。
+Defining functions requires implementation `FunctionOpInterface`，It depends on `Symbol` and `CallableOpInterface`。
+at the same time，Because we defined it Region，It's better to add `RegionKindInterface`，It will automatically check for us Region Is the format correct?。
 
-我们的 Function 是一个全局的函数，需要加上 `IsolatedFromAbove` Trait，这表示它不会使用它所在的 Region 之前的任何值。与之相对的是 `for`，就不是 `IsolatedFromAbove`，因为它要使用上下文的值。
+Our Function It is a global function，Need to add `IsolatedFromAbove` Trait，This means it won't use what it is located in Region Any previous value。In contrast, `for`，That's not `IsolatedFromAbove`，Because it uses the context's value。
 
-这里使用 `AnyRegion`，MLIR 还为我们提供了一些其他的 Region 选项，如 `SizedRegion<1>` 表示只有一个基本块的 `Regin`。
+Used here `AnyRegion`，MLIR We also provide some other Region Options，like `SizedRegion<1>` Indicates that there is only one basic block `Regin`。
 
-为了能正确地打印函数，我们需要调用 MLIR 提供给我们的 parser 和 printer，这里选 `hasCustomAssemblyFormat=true`。
+In order to print the function correctly，We need to call MLIR Provided to us parser and printer，Choose here `hasCustomAssemblyFormat=true`。
 
-随后，要实现好每个 Interface 需要的函数，如 `extraClassDeclaration` 里面的一样。
+Then，To achieve each Interface Required functions，like `extraClassDeclaration` The same inside。
 
 ```tablegen
 def FuncOp : ToyOp<"func", [
   IsolatedFromAbove,
   FunctionOpInterface,
-  /* Symbol, */ /* Symbol 会自动被 FunctionOpInterface 加上 */
-  /* CallableOpInterface, */ /* CallOpInterface 会自动被 FunctionOpInterface 加上 */
+  /* Symbol, */ /* Symbol Will be automatically FunctionOpInterface Plus */
+  /* CallableOpInterface, */ /* CallOpInterface Will be automatically FunctionOpInterface Plus */
   RegionKindInterface]> {
   let summary = "function";
   let arguments = (ins
     SymbolNameAttr:$sym_name,
     TypeAttrOf<FunctionType>:$function_type,
-    // FunctionOpInterface 需要两个 Attr 来记录 arg 和 res 的名字
+    // FunctionOpInterface Need two Attr Come to record arg and res Name
     OptionalAttr<DictArrayAttr>:$arg_attrs,
     OptionalAttr<DictArrayAttr>:$res_attrs
   );
@@ -1223,7 +1223,7 @@ def FuncOp : ToyOp<"func", [
   let extraClassDeclaration = [{
     // Method of FunctionOpInterface
     mlir::Region * getCallableRegion() {return &getBody();}
-    // getFunctionType 函数会自动生成
+    // getFunctionType Functions will be generated automatically
     // mlir::FunctionType getFunctionType(); 
 
     // Method of CallableOpInterface
@@ -1236,7 +1236,7 @@ def FuncOp : ToyOp<"func", [
 }
 ```
 
-然后在 `toy.cpp`，使用 MLIR 自带的 function interface 来 parse 和 print。
+Then in `toy.cpp`，use MLIR Bring your own function interface Come parse and print。
 
 ```cpp
 #include "mlir/Interfaces/FunctionImplementation.h"
@@ -1260,9 +1260,9 @@ void FuncOp::print(OpAsmPrinter &p) {
 }
 ```
 
-####  7.8.3. <a name='定义-call'></a>定义 Call
+####  7.8.3. <a name='definition-call'></a>definition Call
 
-使用 CallOpInterface 就行了，需要写一下 Interface 函数。
+use CallOpInterface Just do it，Need to write Interface function。
 
 ```tablegen
 def CallOp : ToyOp<"call", [CallOpInterface]> {
@@ -1281,13 +1281,13 @@ def CallOp : ToyOp<"call", [CallOpInterface]> {
 }
 ```
 
-##  8. <a name='添加-pass'></a>添加 Pass
+##  8. <a name='Add to-pass'></a>Add to Pass
 
-上一节讲述了 IR 的定义、输入、输出、成员函数等等。但一个编译器只有 IR 还不够，需要有在 IR 上运行的 Pass。我们这一节介绍如何使用方便快捷的 tablegen 来定义 Pass。
+The previous section talked about IR Definition、enter、Output、Member functions, etc.。But a compiler only IR Not enough，Need to be there IR Running on Pass。Our section describes how to use it easily tablegen To define Pass。
 
-###  8.1. <a name='pass-工程模板'></a>Pass 工程模板
+###  8.1. <a name='pass-Project templates'></a>Pass Project templates
 
-1. `include/ToyPasses.td`：描述 Pass 文件
+1. `include/ToyPasses.td`：describe Pass document
 
     ```tablegen
     include "mlir/Pass/PassBase.td"
@@ -1298,7 +1298,7 @@ def CallOp : ToyOp<"call", [CallOpInterface]> {
     }
     ```
 
-2. `include/CMakeLists.txt`：添加 tablegen
+2. `include/CMakeLists.txt`：Add to tablegen
 
     ```cmake
     set(LLVM_TARGET_DEFINITIONS ToyPasses.td)
@@ -1306,23 +1306,23 @@ def CallOp : ToyOp<"call", [CallOpInterface]> {
     add_public_tablegen_target(MLIRToyTransformsIncGen)
     ```
 
-3. `include/ToyPasses.h`：Pass 的头文件
+3. `include/ToyPasses.h`：Pass header file
     ```cpp
     namespace toy {
-    // 先生成定义
+    // Generate definition
     #define GEN_PASS_DECL
     #include "toy/ToyPasses.h.inc"
 
-    // 在写 create 函数表
+    // Writing create Function table
     std::unique_ptr<mlir::Pass> createConvertToyToArithPass();
 
-    // 生成注册函数
+    // Generate registration function
     #define GEN_PASS_REGISTRATION
     #include "toy/ToyPasses.h.inc"
     }
     ```
 
-4. `lib/Transforms/CMakeLists.txt`：添加 library
+4. `lib/Transforms/CMakeLists.txt`：Add to library
     ```cmake
     add_mlir_library(
       ToyTransforms
@@ -1331,7 +1331,7 @@ def CallOp : ToyOp<"call", [CallOpInterface]> {
     )
     ```
 
-5. `lib/Transforms/ConvertToyToArith.cpp`：一个基本实现
+5. `lib/Transforms/ConvertToyToArith.cpp`：A basic implementation
     ```cpp
     #define GEN_PASS_DEF_CONVERTTOYTOARITH
     #include "toy/ToyPasses.h"
@@ -1340,7 +1340,7 @@ def CallOp : ToyOp<"call", [CallOpInterface]> {
     struct ConvertToyToArithPass : 
         toy::impl::ConvertToyToArithBase<ConvertToyToArithPass>
     {
-      // 使用父类的构造函数
+      // Using the constructor of the parent class
       using toy::impl::ConvertToyToArithBase<ConvertToyToArithPass>::ConvertToyToArithBase;
       void runOnOperation() final {
         getOperation()->print(llvm::errs());
@@ -1352,27 +1352,27 @@ def CallOp : ToyOp<"call", [CallOpInterface]> {
     }
     ```
 
-6. 注册 Pass：`tools/toy-opt/toy-opt.cpp`
+6. register Pass：`tools/toy-opt/toy-opt.cpp`
 
     ```cpp
     toy::registerPasses();
     return asMainReturnCode(MlirOptMain(argc, argv, "toy-opt", registry));
     ```
 
-7. 测试：`./ex5-opt -convert-toy-to-arith ../ex5-pass/ex5.mlir`
+7. test：`./ex5-opt -convert-toy-to-arith ../ex5-pass/ex5.mlir`
 
-###  8.2. <a name='pass-定义详解'></a>Pass 定义详解
+###  8.2. <a name='pass-Definition explanation'></a>Pass Definition explanation
 
-####  8.2.1. <a name='指定-pass-在哪个-op-上运行'></a>指定 Pass 在哪个 Op 上运行
+####  8.2.1. <a name='designation-pass-Which one is-op-Run on'></a>designation Pass Which one is Op Run on
 
-参考 [Pass Infrastructure](https://mlir.llvm.org/docs/PassManagement/)，MLIR 的 Pass 有下面几种：
+reference [Pass Infrastructure](https://mlir.llvm.org/docs/PassManagement/)，MLIR of Pass There are several types below：
 
-* OperationPass：在某个固定类型的 Op 上运行的 Pass
-* InterfacePass：在特定的 OpInterface 上运行的 Pass
+* OperationPass：In a fixed type Op Running on Pass
+* InterfacePass：In specific OpInterface Running on Pass
 
-它们两个的区别是，Pass 里面 `getOperation()` 返回的是 Operation 还是 Interface。
+The difference between them is，Pass in `getOperation()` The return is Operation still Interface。
 
-默认情况下，`Pass<"convert-toy-to-arith">` 定义了一个在任意 `Operation*` 上都能运行的 Pass，如果要定义在指定 Operation 上运行的 Pass，可以使用下面的定义。注意，此时使用了`toy::FuncOp`，在 `ToyPasses.h` 文件里需要 include 对应的头文件，防止找不到名字。
+By default，`Pass<"convert-toy-to-arith">` Define one at any time `Operation*` Can run on it Pass，If you want to define it in the specified Operation Running on Pass，The following definitions can be used。Notice，Used at this time`toy::FuncOp`，exist `ToyPasses.h` Need in the file include Corresponding header file，Prevent the name from not finding。
 
 ```tablegen
 def ConvertToyToArith : Pass<"convert-toy-to-arith", "toy::FuncOp"> {
@@ -1381,22 +1381,22 @@ def ConvertToyToArith : Pass<"convert-toy-to-arith", "toy::FuncOp"> {
 }
 ```
 
-####  8.2.2. <a name='带参数的-pass'></a>带参数的 Pass
+####  8.2.2. <a name='With parameters-pass'></a>With parameters Pass
 
-首先需要在 tablgen 文件里写上参数的定义：
+First of all, tablgen Write the definition of parameters in the file：
 
 ```tablegen
 def IsolateTopModule : Pass<"convert-toy-to-arith"> {
   let summary = "Convert Toy To Arith";
   let constructor = "toy::createConvertToyToArithPass()";
   let options = [
-    // 代码里的名字 命令行的名字 类型    默认值   帮助
+    // Name in the code Command line name type    default value   help
     Option<"name", "name", "std::string", "", "help">
   ];
 }
 ```
 
-然后，在 `ToyPasses.h` 文件里，要修改 create 函数的定义：
+Then，exist `ToyPasses.h` In the file，To modify create Function definition：
 
 ```cpp
 std::unique_ptr<mlir::Pass> createConvertToyToArithPass(
@@ -1404,12 +1404,12 @@ std::unique_ptr<mlir::Pass> createConvertToyToArithPass(
 );
 ```
 
-在实现 create 函数的时候，也要带上参数：
+In realizing create When the function，Also bring parameters：
 ```cpp
 struct ConvertToyToArithPass : 
     toy::impl::ConvertToyToArithBase<ConvertToyToArithPass>
 {
-  // 使用父类的构造函数
+  // Using the constructor of the parent class
   using toy::impl::ConvertToyToArithBase<ConvertToyToArithPass>::ConvertToyToArithBase;
   void runOnOperation() final {
     llvm::errs() << "get name: " << name << "\n";
@@ -1422,13 +1422,13 @@ std::unique_ptr<mlir::Pass> toy::createConvertToyToArithPass(
 }
 ```
 
-配置参数的方法：`ex5-opt -convert-toy-to-arith="name=xxx" ../ex5-pass/ex5.mlir`
+How to configure parameters：`ex5-opt -convert-toy-to-arith="name=xxx" ../ex5-pass/ex5.mlir`
 
-###  8.3. <a name='简单的-dce-pass-实现'></a>简单的 DCE Pass 实现
+###  8.3. <a name='Simple-dce-pass-accomplish'></a>Simple DCE Pass accomplish
 
-Pass 的实现，就是灵活使用 IR 的遍历与修改。我们弄一个简单 DCE Pass 作为 Example
+Pass Implementation，Just use it flexibly IR Traversal and modification。Let's make a simple DCE Pass As Example
 
-####  8.3.1. <a name='定义'></a>定义
+####  8.3.1. <a name='definition'></a>definition
 
 ```tablegen
 def DCE : Pass<"toy-dce", "toy::FuncOp"> {
@@ -1437,7 +1437,7 @@ def DCE : Pass<"toy-dce", "toy::FuncOp"> {
 }
 ```
 
-####  8.3.2. <a name='实现'></a>实现
+####  8.3.2. <a name='accomplish'></a>accomplish
 
 ```cpp
 struct DCEPass : toy::impl::DCEBase<DCEPass> {
@@ -1450,17 +1450,17 @@ struct DCEPass : toy::impl::DCEBase<DCEPass> {
   }
   void runOnOperation() final {
     llvm::DenseSet<Operation*> visited;
-    // 遍历所有 Return，把 Return 可达的加入 visited 集合
+    // Iterate through all Return，Bundle Return Reachable join visited gather
     getOperation()->walk([&](toy::ReturnOp op) {
       visitAll(visited, op);
     });
     llvm::SmallVector<Operation*> opToRemove;
-    // 将不可达的加入 opToRemove 集合
+    // Add unreachable opToRemove gather
     getOperation().walk([&](Operation * op) {
       if(op == getOperation()) return;
       if(!visited.contains(op)) opToRemove.push_back(op);
     });
-    // 反向 erase
+    // Reverse erase
     for(auto v: reverse(opToRemove)) {
       v->erase();
     }
@@ -1470,19 +1470,19 @@ struct DCEPass : toy::impl::DCEBase<DCEPass> {
 
 ##  9. <a name='pattern-rewrite'></a>Pattern Rewrite
 
-pattern rewrite 是 MLIR 的一大特色。Pattern 会匹配 IR 的一个子图，然后将其更改为新的格式。MLIR 会为我们自动调度 pattern，让 IR 的变换更加简单。
+pattern rewrite yes MLIR A major feature of。Pattern Will match IR A sub-picture of，Then change it to the new format。MLIR It will automatically schedule for us pattern，let IR The transformation is simpler。
 
-很多 IR 的操作都可以看作是 Pattern Rewrite：
-* 算术优化，如 x*2 优化为 x+x ，可以看作是对表达式做模式替换
-* 表达式 Lowering，可以看作是把 HighLevel Op 替换为 LowLevel Op
+a lot of IR All operations can be regarded as Pattern Rewrite：
+* Arithmetic optimization，like x*2 Optimized to x+x ，It can be regarded as a pattern replacement for expressions
+* expression Lowering，Can be regarded as HighLevel Op Replace with LowLevel Op
 
-在这一节，我们使用 Pattern Rewrite 来把 toy 里的 Op 转换为 Arith 里的 Op。
+In this section，We use Pattern Rewrite Come and make it toy Inside Op Convert to Arith Inside Op。
 
 ###  9.1. <a name='pattern-rewrite-1'></a>Pattern Rewrite
 
-####  9.1.1. <a name='描述-pattern'></a>描述 Pattern
+####  9.1.1. <a name='describe-pattern'></a>describe Pattern
 
-`matchAndRewrite` 返回 success 表示能够 match，返回 failure 表示不能 match。如果能 match，就通过 rewriter 改写。rewriter 实现了一套完整的改写 API。
+`matchAndRewrite` return success It means that it can match，return failure It means no match。If it can match，Just pass rewriter rewrite。rewriter A complete set of rewriting API。
 
 ```c++
 struct AddOpPat: OpRewritePattern<AddOp> {
@@ -1499,9 +1499,9 @@ struct AddOpPat: OpRewritePattern<AddOp> {
 };
 ```
 
-####  9.1.2. <a name='调用-pattern'></a>调用 Pattern
+####  9.1.2. <a name='Call-pattern'></a>Call Pattern
 
-在使用 conversion 的时候，首先要定义 `ConversionTarget`，然后要配置好 `PatternSet`，最后调用 `applyXXX` 驱动函数：
+In use conversion When，First, define `ConversionTarget`，Then configure it `PatternSet`，Last call `applyXXX` Driver function：
 
 ```c++
 ConversionTarget target(getContext());
@@ -1512,16 +1512,16 @@ if(failed(applyPartialConversion(getOperation(), target, std::move(patterns))))
   signalPassFailure();
 ```
 
-这里我们使用了 `partialConversion`，MLIR 支持三种 Conversion 模式：
-* `partialConversion`：**如果 Pattern 转换结果是 Legal，则保留转换结果**。如果输入存在 IllegalOp 或 IllegalDialect，立刻报错。
-* `fullConversion`：开始时可能是Illegal的。**调用 Pattern 将其转换，直到全部 Legal 为止**。
-* `greedyPatternRewrite`：**不需要提供 Target，贪心地尝试尽量多次修改**。
+We used it here `partialConversion`，MLIR Support three types Conversion model：
+* `partialConversion`：**if Pattern The conversion result is Legal，Then retain the conversion result**。If the input exists IllegalOp or IllegalDialect，Report an error immediately。
+* `fullConversion`：It might beIllegalof。**Call Pattern Convert it，Until all Legal until**。
+* `greedyPatternRewrite`：**No need to provide Target，Try to modify as many times as possible**。
 
-前两个常用于 Dialect Lowering 之中。而`geedyPatternRewrie` 很适合用来写优化，比如我可以写一个把形如 `toy.sub %a, %a` 替换为 `const 0: i32` 的 pattern，希望 MLIR 尽量多优化它。
+The first two are commonly used Dialect Lowering Among them。and`geedyPatternRewrie` Very suitable for writing optimization，For example, I can write a shape like `toy.sub %a, %a` Replace with `const 0: i32` of pattern，hope MLIR Optimize it as much as possible。
 
 ####  9.1.3. <a name='depedent-dialect-&-linking'></a>Depedent Dialect & Linking
 
-注意，我们将 toy dialect 转换为了 arith dialect，这说明我们的 pass 依赖 arith ，要添加依赖：
+Notice，we will toy dialect Convert to arith dialect，This shows our pass rely arith ，To add dependencies：
 
 ```c++
 void getDependentDialects(DialectRegistry &registry) const final {
@@ -1529,13 +1529,13 @@ void getDependentDialects(DialectRegistry &registry) const final {
 }
 ```
 
-同时，在 `opt` 程序里还要注册 arith，
+at the same time，exist `opt` Register in the program arith，
 
 ```c++
 registry.insert<toy::ToyDialect, func::FuncDialect, arith::ArithDialect>();
 ```
 
-以及连接上 arith，这是我们的 Transform 依赖 arith，所以 arith 应该加载 transform 的连接列表中。
+and on arith，This is ours Transform rely arith，so arith Should be loaded transform in the link list。
 
 ```cmake
 add_mlir_library(
@@ -1547,16 +1547,16 @@ add_mlir_library(
 )
 ```
 
-使用下面的命令来验证结果：
+Use the following command to verify the result：
 
 ```
 ./ex6-opt --convert-toy-to-arith --toy-dce ../ex6-pattern/ex6.mlir
 ```
 
 
-##### debug 的方法
+##### debug Method
 
-可以用 `--debug` 来启动程序，程序会打印出转换的详细过程。
+Can be used `--debug` To start the program，The program will print out the detailed conversion process。
 
 ```
 ./ex6-opt --debug --convert-toy-to-arith ../ex6-pattern/ex6.mlir
@@ -1564,21 +1564,21 @@ add_mlir_library(
 
 ###  9.2. <a name='dialect-convertion-(type-conversion)'></a>Dialect Convertion (Type Conversion)
 
-Dialect 除了 Op 之外，还有 Type。在进行 Dialect 之间的转换的时候，对 Type 的改写也很重要。
+Dialect Apart from Op Outside，besides Type。In progress Dialect When the transition between，right Type Rewriting is also very important。
 
-MLIR 对 Type 做改写的方法是用 `TypeConverter` 完成的， `TypeConverter` 有三个功能：
+MLIR right Type The method of rewriting is to use `TypeConverter` Completed， `TypeConverter` There are three functions：
 
-1. `addConversion`：添加一个 Type 的转换规则
-2. `addTargetMaterialization`：生成将 SourceType 转换为 TargetType 的代码块
-3. `addSourceMaterialization`：生成将 TargetType 转换回 SourceType 的代码块
+1. `addConversion`：Add one Type Conversion rules
+2. `addTargetMaterialization`：Generate will SourceType Convert to TargetType Code blocks
+3. `addSourceMaterialization`：Generate will TargetType Convert back SourceType Code blocks
 
-这三个里面最重要的是 1，剩下两个一般不需要自己实现。
+The most important of these three is 1，The remaining two do not usually need to be implemented by yourself。
 
-为了做示范，我们定义一个自己的 `toy.int` 类型，它可以被转换为 `Integer` 类型。这里略过类型定义的部分，详细请看 [自定义类型](#10-自定义-type)。
+To make a demonstration，We define one's own `toy.int` type，It can be converted to `Integer` type。Skip the type definition part here，Please see more [Custom Type](#10-Customize-type)。
 
 ####  9.2.1. <a name='typeconverter'></a>TypeConverter
 
-首先，我们要声明一个 DialectConverter，然后我们要为其添加类型转换规则。下面的代码添加了 ToyIntegerType 到 IntegerType 的转换。MLIR 会使用神奇的模板元编程的方法，获取传入函数的参数和返回值类型，来判断是什么类型到什么类型的转换。
+first，We want to declare one DialectConverter，Then we want to add a type conversion rule to it。The following code has been added ToyIntegerType arrive IntegerType Conversion。MLIR How to use magic template metaprogramming，Get the parameters and return value types of the incoming function，To determine what type to what type of conversion。
 
 ```c++
 TypeConverter converter;
@@ -1587,13 +1587,13 @@ converter.addConversion([&](ToyIntegerType t) -> std::optional<IntegerType> {
 });
 ```
 
-####  9.2.2. <a name='conversion-pattern：自动做-operand-的类型转换'></a>Conversion Pattern：自动做 Operand 的类型转换
+####  9.2.2. <a name='conversion-pattern：Do it automatically-operand-Type conversion'></a>Conversion Pattern：Do it automatically Operand Type conversion
 
-我们用 ConversionPattern 来自动做类型转换。ConversionPattern 与 RewritePattern 不同的是，它多了一个 `Adaptor`。`Adaptor` 在前面 [InferTypeOpInterface](#772-类型推断infertypeopinterface) 介绍到，`Adaptor` 是只有 operands 没有 results 的中间态。
+We use ConversionPattern Automatically convert type。ConversionPattern and RewritePattern The difference is，It has one more `Adaptor`。`Adaptor` in front of [InferTypeOpInterface](#772-Type inferenceinfertypeopinterface) Introduction，`Adaptor` Yes only operands No results The intermediate state of。
 
-MLIR 在调用 ConversionPattern 之前，会先尝试将 op 的 Operand 全部转换为目标格式，如果不能转换就保留原来的。并且将转换之后的 operand 储存在 Adaptor 里面。
+MLIR Calling ConversionPattern Before，Will try first op of Operand Convert all to target format，If it cannot be converted, keep the original one。And the converted operand Stored in Adaptor in。
 
-在 replace 的时候，类型也可以和原来的不一样（但必须能转换过去），MLIR 会自动处理类型转换的问题。
+exist replace When，The type can be different from the original one（But it must be able to convert），MLIR It will automatically handle type conversion issues。
 
 ```c++
 struct AddOpPat: OpConversionPattern<AddOp> {
@@ -1611,29 +1611,29 @@ struct AddOpPat: OpConversionPattern<AddOp> {
 };
 ```
 
-##### 使用 MLIR 自带的 FuncOpConversion
+##### use MLIR Bring your own FuncOpConversion
 
-在对函数做类型转换的时候，既需要对 Region 的参数表做转换，还需要对函数类型做转换。MLIR为我们提供了默认的 Pattern：
+When performing type conversion to a function，Need to be correct Region Convert the parameter table，You also need to convert the function type。MLIRProvides us with a default Pattern：
 
 ```c++
 populateFunctionOpInterfaceTypeConversionPattern<FuncOp>(patterns, converter);
 ```
 
-####  9.2.3. <a name='类型转换的细节与-debug'></a>类型转换的细节与 Debug
+####  9.2.3. <a name='Details of type conversion and-debug'></a>Details of type conversion and Debug
 
-在使用类型转换时候，可以用 `--debug` 来启动程序，程序会打印出转换的详细过程。
+When using type conversion，Can be used `--debug` To start the program，The program will print out the detailed conversion process。
 
-一般情况下，mlir 做类型转换是通过一个特殊的 Op 来实现的: `builtin.unrealized_conversion_cast`
+Under normal circumstances，mlir Type conversion is done through a special Op To achieve: `builtin.unrealized_conversion_cast`
 
-例如，mlir 要对下面的代码做类型转换：
+For example，mlir To type conversion to the following code：
 
 ```mlir
 %a = toy.constant 0: !toy.int<32>
 %b = toy.add %a, %a: !toy.int<32>
 ```
 
-当然，mlir 一般都是从前往后做替换的，这样更不容易插入 unrealized。可以在 apply 的时候配置 config 改变顺序，为了展示，我们假设 mlir 从%b开始匹配。
-`toy.add`，它的输入是 `%a`，类型为 `!toy.int<32>`，转换为 `i32`，需要做 TargetMaterialization，由于用户没有注册 materialization，就插入一个 unrealized 的转换：
+certainly，mlir Usually it's replaced from front to back，This is less easy to insert unrealized。Can be apply When configuration config Change order，For display，We assume mlir from%bStart matching。
+`toy.add`，Its input is `%a`，Type is `!toy.int<32>`，Convert to `i32`，Need to do TargetMaterialization，Since the user has not registered materialization，Just insert one unrealized Conversion：
 
 ```mlir
 %a = toy.constant 0: !toy.int<32>
@@ -1641,7 +1641,7 @@ populateFunctionOpInterfaceTypeConversionPattern<FuncOp>(patterns, converter);
 %b = arith.add %a_1, %a_1 : i32
 ```
 
-接下来，再匹配 `toy.constant`，被替换为了 `arith.constant`，mlir 发现输出类型发生了变化，做 SourceMaterialization，同样插入 unrealized
+Next，Match again `toy.constant`，Replaced for `arith.constant`，mlir I found that the output type had changed，Do SourceMaterialization，Also inserted unrealized
 
 ```mlir
 %a_2 = arith.constant 0: i32
@@ -1650,28 +1650,28 @@ populateFunctionOpInterfaceTypeConversionPattern<FuncOp>(patterns, converter);
 %b = arith.add %a_1, %a_1 : i32
 ```
 
-最后，mlir 会尝试把所有的 unrealized 转换移除。上面 `i32` 被转换成了 `!toy.int<32>`，又被转换了回去，是无效转换，需要移除，最后变成：
+at last，mlir Will try to put all unrealized Conversion removal。above `i32` Converted to `!toy.int<32>`，Been converted back again，It's invalid conversion，Need to be removed，Finally become：
 
 ```mlir
 %a = arith.constant 0: i32
 %b = arith.add %a, %a : i32
 ```
 
-####  9.2.4. <a name='使用自己的-materialization'></a>使用自己的 materialization
+####  9.2.4. <a name='Use your own-materialization'></a>Use your own materialization
 
-如果用户注册了自己的 materialization 方法，MLIR 就会使用用户注册的 materilzation。
+If the user has registered his own materialization method，MLIR Will register with the user materilzation。
 
-一个使用自己 materialization 的场景：我们自己定义了 `float32` 复数类型，转换的时候要把它转换成 `float8`。我们肯定希望尽量少地调用函数做类型转换 `float8`。但如果`float32`是函数参数，别人要调用这个函数不能随便改，就只能强行转换了。
+One uses it materialization Scene of：We defined it ourselves `float32` Plural Types，When converting it to `float8`。We definitely want to call functions as little as possible for type conversion `float8`。But if`float32`It's a function parameter，Others cannot change this function if they want to call it，I can only force the conversion。
 
-例如，我们可以直接把 `unrealized_conversion_cast` 注册为默认 materialization，这样在 debug 的时候很方便。
+For example，We can just put `unrealized_conversion_cast` Register as default materialization，This way debug Very convenient when。
 
 ```c++
-converter.addTargetMaterialization([](OpBuilder& builder, Type /* 对所有 SourceType 注册 */ resultType, ValueRange inputs, Location loc) -> std::optional<Value> {
+converter.addTargetMaterialization([](OpBuilder& builder, Type /* For all SourceType register */ resultType, ValueRange inputs, Location loc) -> std::optional<Value> {
   return builder.create<UnrealizedConversionCastOp>(loc, resultType, inputs).getResult(0);
 });
 ```
 
-把关于函数的 target 注释掉，可以观察程序的结果：
+Put about the function target Comment out，You can observe the results of the program：
 
 ```c++
 // target.addDynamicallyLegalOp<FuncOp>([](FuncOp f) {
@@ -1693,11 +1693,11 @@ toy.func @add(%arg0: !toy.int<32>, %arg1: !toy.int<32>) -> !toy.int<32> {
 }
 ```
 
-###  9.3. <a name='使用-mlir-里已有的-pattern-做多步转换'></a>使用 MLIR 里已有的 Pattern 做多步转换
+###  9.3. <a name='use-mlir-Already in it-pattern-Do multi-step conversion'></a>use MLIR Already in it Pattern Do multi-step conversion
 
-MLIR 为我们提供了模块化的 PatternRewrite API。几乎所有的 Conversion 都有对应的 populateXXXPatterns 函数。
+MLIR Provides us with modular PatternRewrite API。Almost all Conversion All have corresponding populateXXXPatterns function。
 
-例如，我们想要一次性将 `toy` 转换到 `llvm`，可以先自己写 pattern 把 `toy` 转换到 `arith`，再添加 `arith` 的 pattern 将其转换为 `LLVM`：
+For example，We want to be one-time `toy` Convert to `llvm`，You can write it yourself first pattern Bundle `toy` Convert to `arith`，Add again `arith` of pattern Convert it to `LLVM`：
 
 ```c++
 #include "mlir/Conversion/ArithToLLVM/ArithToLLVM.h"
@@ -1709,16 +1709,16 @@ target.addLegalDialect<LLVM::LLVMDialect>();
 LLVMTypeConverter converter(&getContext());
 RewritePatternSet patterns(&getContext());
 patterns.add<AddOpPat, SubOpPat, ConstantOpPat>(&getContext());
-arith::populateArithToLLVMConversionPatterns(converter, patterns); // 使用已有 pattern
+arith::populateArithToLLVMConversionPatterns(converter, patterns); // Used pattern
 if(failed(applyPartialConversion(getOperation(), target, std::move(patterns))))
   signalPassFailure();
 ```
 
-其他头文件，需要连接的库文件，请看 `ex6` 里的代码。
+Other header files，The library file that needs to be connected，Please see `ex6` The code in。
 
-##  10. <a name='自定义-type'></a>自定义 Type
+##  10. <a name='Customize-type'></a>Customize Type
 
-参考 `ex7`，自定义类型的方法：
+reference `ex7`，Methods to customize types：
 
 ```tablegen
 // ToyDialect.td
@@ -1726,7 +1726,7 @@ def ToyDialect : Dialect {
   let name = "toy";
   let cppNamespace = "::toy";
   let summary = "Toy Dialect";
-  let useDefaultTypePrinterParser = true; // 新增
+  let useDefaultTypePrinterParser = true; // New
   let extraClassDeclaration = [{
     void registerTypes();
   }];
@@ -1756,7 +1756,7 @@ void ToyDialect::initialize() {
 #define GET_OP_LIST
 #include "toy/Toy.cpp.inc"
   >();
-  registerTypes(); // 增加
+  registerTypes(); // Increase
 }
 
 void ToyDialect::registerTypes() {
@@ -1769,63 +1769,63 @@ void ToyDialect::registerTypes() {
 
 ##  11. <a name='tips'></a>TIPS
 
-###  11.1. <a name='如何找头文件、找想要的函数'></a>如何找头文件、找想要的函数
+###  11.1. <a name='How to find header files、Find the function you want'></a>How to find header files、Find the function you want
 
-首先，对于常用的头文件，可以都过目一下函数列表，包括：
+first，For commonly used header files，You can check out the function list，include：
 
-* `llvm/ADT/*` 里面的数据结构
+* `llvm/ADT/*` The data structure inside
 * `mlir/IR/CommonAttrConstraints.td`
 * `mlir/IR/CommonTypeConstraints.td`
 
-MLIR 的 Dialect 文件结构都比较整齐，`mlir/Dialect/XXX/IR/XXX.h`
+MLIR of Dialect The file structure is relatively neat，`mlir/Dialect/XXX/IR/XXX.h`
 
-其他的函数/头文件，建议开个 vscode 到 mlir 源码目录，使用全局搜索来找。
+Other functions/Header file，It is recommended to open one vscode arrive mlir Source Code Directory，Use global search to find。
 
-###  11.2. <a name='如何找需要连接的库'></a>如何找需要连接的库
+###  11.2. <a name='How to find the library you need to connect to'></a>How to find the library you need to connect to
 
-首先，找到你 include 的头文件，如 `mlir/Dialect/Func/IR/FuncOps.h`。
+first，Found you include header file，like `mlir/Dialect/Func/IR/FuncOps.h`。
 
-然后，找到这个头文件对应的 cpp 文件，`lib/Dialect/Func/IR/FuncOps.cpp`。
+Then，Find the corresponding header file cpp document，`lib/Dialect/Func/IR/FuncOps.cpp`。
 
-从 cpp 文件逐步往上找 `CMakeLists.txt`，检查里面的 `add_mlir_dialect_library` 里的库文件名。
+from cpp Search for the file step by step `CMakeLists.txt`，Check the inside `add_mlir_dialect_library` The library file name。
 
-###  11.3. <a name='如何加快编译速度'></a>如何加快编译速度
+###  11.3. <a name='How to speed up compilation'></a>How to speed up compilation
 
-MLIR 经常会连接出上百 M 甚至上 G 的文件，不同的链接器对性能有很大影响，使用 `lld` (llvm 链接器) 似乎会比 `ld` 快非常多，下面的命令可以让 CMAKE 强制使用 lld（你需要先安装 llvm 编译工具包）。
+MLIR It often connects hundreds M Even G Files，Different linkers have a great impact on performance，use `lld` (llvm Linker) It seems to be better `ld` Very fast，The following command can make CMAKE Forced use lld（You need to install it first llvm Compilation toolkit）。
 
 ```bash
 cmake .. -DCMAKE_CXX_FLAGS="-fuse-ld=lld"
 ```
 
-###  11.4. <a name='去-mlir-里抄代码'></a>去 MLIR 里抄代码
+###  11.4. <a name='go-mlir-Copy code in'></a>go MLIR Copy code in
 
-MLIR 为我们写好了大量的 Dialect，我们想要的功能，那些 dialect 多半都已经实现过了。
+MLIR Written a lot for us Dialect，The features we want，Those ones dialect Most of them have been achieved。
 
-可以用 `mlir-opt --help`，`mlir-opt --help-hidden` 看看有那些 dialect 哪些选项，找到可能是和自己想要做的相似的，然后过去看代码，边看边抄大概就能实现好了。
+Can be used `mlir-opt --help`，`mlir-opt --help-hidden` See what are there dialect What options，Find something that might be similar to what you want to do，Then go and read the code，You can probably do it by reading and copying。
 
-##  12. <a name='mlir-的批判：c++-v.s.-rust'></a>MLIR 的批判：C++ v.s. Rust
+##  12. <a name='mlir-Criticism：c++-v.s.-rust'></a>MLIR Criticism：C++ v.s. Rust
 
-> 这一段都是我的个人想法，可能会比较偏激。
+> This is my personal thought，May be more extreme。
 
-MLIR 只能用 g++ 编译，用 clang++ 编译会 Runtime Error。这充分地说明了一个事实：MLIR 这座庞大的大厦，是建立在脆弱的 ub (undefined behavior) 之上的。
+MLIR Only use g++ Compilation，use clang++ Compilation meeting Runtime Error。This fully illustrates a fact：MLIR This huge building，It is based on fragility ub (undefined behavior) Above。
 
-MLIR Context，在 rust 眼里，实际上就是一个 Interner，把类型转换为指针，来去重和加速类型比较。但而为了实现它，MLIR 使用了晦涩难懂又麻烦的 Pointer, Storage 的模式。
+MLIR Context，exist rust In the eyes，Actually it's one Interner，Convert type to pointer，Comparison of the coming and going and acceleration types。But in order to achieve it，MLIR Used with obscure and troublesome Pointer, Storage The mode。
 
-Tablegen 可以快速地描述一段 IR，前提是去掉 debug 需要的时间。
+Tablegen A paragraph can be described quickly IR，Prerequisite is to remove debug The time required。
 
-多返回值 Op 虽然增加了 IR 的表达力，但让数据流分析变得复杂。实际上，多返回值 Op 几乎不存在。但我依然不得不为罕见的部分 Op 做特判，处理多返回值的情况。
+Multiple return values Op Although it has increased IR Expression，But make data flow analysis complicated。In fact，Multiple return values Op Almost nonexistent。But I still have to do the rare part Op Make a special judgment，Handle multiple return values。
 
-另外，作为 C++ 的通病，MLIR 指针混沌得让人绝望。而更让人绝望的是，MLIR 要求任意操作过程中，IR 总是合法的。我们不能插入空指针，也不能随意删除一个变量。可以说，当你走出了 PatternRewrite 的舒适区域，想要做一些复杂的 Inline, Group, Partition 操作时，Segmentation Fault 总是与你形影不离。
+in addition，As C++ Common problems，MLIR The pointer is so chaotic that it makes people desperate。What makes people even more desperate is，MLIR Requires any operation，IR Always legal。We can't insert a null pointer，You can't delete a variable at will。It can be said，When you walk out PatternRewrite Comfort area，Want to do something complicated Inline, Group, Partition During operation，Segmentation Fault Always inseparable from you。
 
-mlir 创新地把 Op 同构地看作 operand, attribute, result 的集合，具体的 Op 只是这个集合的解释方法。但其本质，就是定制的序列化和反序列化系统。而困惑的是，这样一个输入输出系统，在运行过程中一直存在，我们随时都在反序列化 Op 来获取 operand，更新 operand 之后又序列化到通用表示上。为了完成这样的序列化、反序列化，mlir 创造了令人惊叹的冗余代码，巨大的二进制文件，令人困惑的函数定义，无处不在的 Segmentation Fault 陷阱，和未知的性能提升。
+mlir Innovatively Op Isomorphically viewed as operand, attribute, result Collection of，Specific Op Just the explanation of this set。But its essence，It is a customized serialization and deserialization system。And what is confused is，Such an input and output system，Always exist during operation，We're deserializing anytime Op Come and get it operand，renew operand Then serialize to the general representation。In order to complete such serialization、Deserialization，mlir Create amazing redundant code，Huge binary files，Confusing function definitions，Everywhere Segmentation Fault trap，and unknown performance improvements。
 
-我觉得，一个更好的 IR System 应该是：
+I think，A better one IR System It should be：
 
-* 严格 SSA 的：所有操作都有返回值，多返回值看作 Tuple，无返回值看作空 Tuple
-* 异构Op：Op 不存在 operand, attr, result 的统一形式，而是异构的，序列化按需进行。
-* 无状态的：不需要 Interner。Interner 是为了处理大量的复制。用 Rc 来处理复制，实现专门的 Pass 来去重。
-* 控制流、数据流分离的：控制流和数据流用不同的结构来储存，可以做分离的分析，而不是存在一个指针表里面
+* strict SSA of：All operations have return values，Multiple return values ​​are considered Tuple，No return value is considered empty Tuple
+* HeterogeneousOp：Op Does not exist operand, attr, result The unified form of，It's heterogeneous，Serialization is done on demand。
+* Stateless：unnecessary Interner。Interner It is to handle large amounts of replication。use Rc To handle copying，Implement special Pass Come and go heavy。
+* Control flow、Data flow separation：Control flow and data flow are stored in different structures，Can perform separation analysis，Instead of having a pointer table
 
 ##  13. <a name='issue-&-reply'></a>Issue & Reply
 
-本文档仅作教学，本人不负责解决使用 mlir 中遇到的任何问题。作为一个要使用 mlir 的人，应该做好遭遇玄学 bug 的觉悟。
+This document is for teaching only，I am not responsible for the use of mlir Any problems encountered in。As a to use mlir The person，Metaphysics should be done well bug Awareness。
